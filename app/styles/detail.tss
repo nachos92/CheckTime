@@ -1,0 +1,10 @@
+
+".container" : {
+  
+}
+
+"TableView":{
+	top: '20%',
+	height: '70%'
+	
+}

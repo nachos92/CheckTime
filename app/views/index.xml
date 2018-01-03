@@ -1,0 +1,30 @@
+<Alloy>
+	<TabGroup>
+		<Tab title="Benvenuto" icon="KS_nav_ui.png">
+			<Window id="mainWindow">
+				<Label id="titolo" top="0"></Label>
+				<Button id="refresh_tab" onClick="refresh">Refresh</Button>
+				<AlertDialog id="dialog" onClick="clickDialog" title="ATTENZIONE"
+            		message="Inserire codice operatore:" persistent="true" cancel="1"
+            		style= "Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT">
+        		</AlertDialog>
+				<TableView id='elenco' class='container'></TableView>
+				
+				<Button onClick="play" visible="false">Play sound</Button>
+				<Button id="info" onClick="showInfo">Info</Button>
+			</Window>
+		</Tab>
+		<Tab title="Impostazioni" icon="KS_nav_views.png">
+			<Window title="Impostazioni">
+				<TableView id="tabImpostazioni"scrollable="false">
+					<TableViewSection id="lista" title="Generali">
+						<TableViewRow id="sett0" title="Codice operatore"/>							
+						<TableViewRow id="sett1" title="Anticipo (minuti) dell'allarme"/>
+						
+					</TableViewSection>
+				</TableView>
+				<Button bottom="10%" onClick="suona">SALVA</Button>
+			</Window>
+		</Tab>
+	</TabGroup>
+</Alloy>

@@ -1,0 +1,53 @@
+"Window": {
+	backgroundColor: "#FFFEEE"
+}
+
+
+"Label": {
+	width: Ti.UI.SIZE,
+	height: Ti.UI.SIZE,
+	color: "#000",
+	font: {
+		fontSize: 20,
+		fontFamily: 'Helvetica Neue'
+	},
+	textAlign: 'center'
+}
+
+"Button": {
+	bottom: '10%',
+} 
+
+"#refresh_tab":{
+	height: '20',
+	length: '20',
+	top: '0',
+	right:'3%',
+	backgroundColor: 'green',
+	
+}
+
+"#info":{
+	height: '20',
+	length: '20',
+	top: '0',
+	left:'3%',
+	backgroundColor: 'red'
+}
+
+
+'TableView': {
+	borderRadius: '1',
+	borderColor: "black",
+	top: '10%',
+	height: '90%'
+}
+"#tabImpostazioni":{
+	top:'0',
+	height: '100%'
+}
+
+"#elenco":{
+	height: '90%',
+	
+}

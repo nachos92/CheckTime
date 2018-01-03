@@ -1,0 +1,10 @@
+<Alloy>
+	<Window class="container" backgroundColor="#ffffb3">
+		<TableView id="tabDettaglio" class='container'>
+			
+			
+		</TableView>
+		<Button top='10%' left='5%' onClick='closeDetail'>Annulla</Button>
+		<Button bottom='2%' onClick="conferma">CONFERMA</Button>
+	</Window>
+</Alloy>
