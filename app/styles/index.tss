@@ -21,7 +21,7 @@
 "#refresh_tab":{
 	height: '20',
 	length: '20',
-	top: '0',
+	top: '2%',
 	right:'3%',
 	backgroundColor: 'green',
 	
@@ -30,7 +30,7 @@
 "#info":{
 	height: '20',
 	length: '20',
-	top: '0',
+	top: '2%',
 	left:'3%',
 	backgroundColor: 'red'
 }

@@ -706,7 +706,7 @@ $.sett0.addEventListener('click',function(){
 
 $.sett1.addEventListener('click', function(){
 	cambiaCod(1, "Anticipo dell'allarme rispetto all'orario di inizio",
-		"Lasciando vuoto si imposta un anticipo di 0 minuti. (Attuale: "+app.minuti+"min)");
+		"ATTENZIONE: gli allarmi gia' impostati non verranno modificati. Lasciando vuoto si imposta un anticipo di 0 minuti. (Attuale: "+app.minuti+"min)");
 });
 
 //initNotifiche();
