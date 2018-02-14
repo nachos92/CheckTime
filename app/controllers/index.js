@@ -706,8 +706,13 @@ $.sett0.addEventListener('click',function(){
 	});
 
 $.sett1.addEventListener('click', function(){
-	cambiaCod(1, "Anticipo dell'allarme rispetto all'orario di inizio",
-		"ATTENZIONE: gli allarmi gia' impostati non verranno modificati. Lasciando vuoto si imposta un anticipo di 0 minuti. (Attuale: "+app.minuti+"min)");
+	cambiaCod(
+		1,
+		("Attuale: "+app.minuti + "min"),
+		(
+		"Valore che indica quanto prima si vuole ricevere la notifica, rispetto all'orario di inizio del giro."+'\n'+'\n'+
+		"ATTENZIONE: gli allarmi gia' impostati non verranno modificati.")
+		);
 });
 
 //initNotifiche();

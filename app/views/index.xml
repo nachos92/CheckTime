@@ -19,7 +19,7 @@
 				<TableView id="tabImpostazioni"scrollable="false">
 					<TableViewSection id="lista" title="Generali">
 						<TableViewRow id="sett0" title="Codice operatore"/>							
-						<TableViewRow id="sett1" title="Anticipo (minuti) dell'allarme"/>
+						<TableViewRow id="sett1" title="Preavviso allarme (min)"/>
 						
 					</TableViewSection>
 				</TableView>
