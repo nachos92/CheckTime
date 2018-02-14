@@ -2,7 +2,10 @@
 var dip = $.args;
 
 
-var scanditsdk = require("com.mirasense.scanditsdk");
+/*var scanditsdk = require("com.mirasense.scanditsdk");
+//scanditsdk.appKey = "";
+scanditsdk.cameraFacingPreference = 0;    // 0 = back, 1 = front
+*/
 
 var urlBase = "http://127.0.0.1:8000/";
 var urlInvio = urlBase + "checks/segnalazione/";
@@ -11,8 +14,6 @@ var urlInvio = urlBase + "checks/segnalazione/";
  var dizModifiche = {};
 
  
-//scanditsdk.appKey = "";
-scanditsdk.cameraFacingPreference = 0;    // 0 = back, 1 = front
 
 
 

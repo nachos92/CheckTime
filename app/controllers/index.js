@@ -157,10 +157,11 @@ function registraNotifiche(){
 		console.log(">> Impostazione allarmi");
 		alert("Allarmi impostati.");
 	}
-	else{		
+	else{
+		/*		
 		var alarmModule = require('bencoding.alarmmanager');
 		var alarmManager = alarmModule.createAlarmManager();
-
+		*/
 	}
 	
 	// ***** ANDROID
