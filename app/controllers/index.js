@@ -7,6 +7,7 @@ var app = {};
  * Quanti minuti prima dell'orario di inizio del giro si vuole mandare la notifica.
  */
 app.minuti = 30;
+app["urlBase"] = "http://127.0.0.1:8000/";
 
 /*
  * Forse può servire.
@@ -205,7 +206,19 @@ function cambiaCod(indexImpostazione, titolo, messaggio){
 				}
 					
 			}
-			alert("Modifica effettuata. Nuovo valore: "+e.text);
+			if (indexImpostazione == 2){
+				app["urlBase"] = e.text;
+				app.primaGet = true;
+				
+				setRefreshVisible();
+				
+				app.json = null;
+				$.elenco.setData(null);
+				
+				getData(primo = true);
+				cambiaTitolo("");
+			}
+			//alert("Modifica effettuata. Nuovo valore: "+e.text);
 			
 	}	
 	});
@@ -712,8 +725,17 @@ $.sett1.addEventListener('click', function(){
 		(
 		"Valore che indica quanto prima si vuole ricevere la notifica, rispetto all'orario di inizio del giro."+'\n'+'\n'+
 		"ATTENZIONE: gli allarmi gia' impostati non verranno modificati.")
-		);
+	);
 });
+
+$.sett2.addEventListener('click', function(){
+	cambiaCod(
+		2,
+		("Attuale: "+app.minuti + "min"),
+		("Inserire indirizzo base del database. (Attuale: "+app["urlBase"]+")")
+	);
+});
+
 
 //initNotifiche();
 showDialog();

@@ -20,7 +20,7 @@
 					<TableViewSection id="lista" title="Generali">
 						<TableViewRow id="sett0" title="Codice operatore"/>							
 						<TableViewRow id="sett1" title="Preavviso allarme (min)"/>
-						
+						<TableViewRow id="sett2" title="URL base"/>
 					</TableViewSection>
 				</TableView>
 				<Button bottom="10%" onClick="suona">SALVA</Button>
