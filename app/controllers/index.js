@@ -300,8 +300,9 @@ function getData(primo) {
 	
 	url_target = app['urlRicezione'].concat(app.cod_op);
 	xhr.open("GET", url_target);
+	wait(1000);
 	xhr.send();
-	wait(500);
+	
 	
 	
 	try{
@@ -372,7 +373,7 @@ function invioDaydone(mess){
  * prima di procedere con l'aggiornamento.
  */
 function refresh() {
-	//console.log(app.cod_op);
+	
 	console.log("PrimaGet --> "+app.primaGet);
 	getData(app.primaGet);
 	
