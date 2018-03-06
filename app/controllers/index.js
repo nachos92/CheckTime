@@ -2,11 +2,13 @@
  * Variabile globale.
  */
 var app = {};
+var isAndroid = (Ti.Platform.osname=='android') ? true : false;
 
 /**
  * Quanti minuti prima dell'orario di inizio del giro si vuole mandare la notifica.
  */
-app.minuti = 30;
+
+app['minuti'] = 30;
 app["urlBase"] = "http://127.0.0.1:8000/";
 
 /*
@@ -15,11 +17,10 @@ app["urlBase"] = "http://127.0.0.1:8000/";
 app.modificheNonSalvate = false;
 app.primaGet = true;
 
-var urlBase = "http://127.0.0.1:8000/";
-var urlRicezione = urlBase + "checks/";
-var urlInvio = urlBase + "checks/segnalazione/";
+app['urlRicezione'] = app['urlBase'] + "checks/";
+app['urlInvio'] = app['urlBase'] + "checks/segnalazione/";
 
-var urlDaydone = urlBase + "checks/planning/daydone/";
+app['urlDaydone'] = app['urlBase'] + "checks/planning/daydone/";
 
 
 
@@ -54,14 +55,19 @@ function cambiaTitolo(stringa){
 	$.mainWindow.setTitle(stringa);
 }
 function initNotifiche(){
-	if (Ti.Platform.name == "iPhone OS" && parseInt(Ti.Platform.version.split(".")[0]) >= 8) {
-    Ti.App.iOS.registerUserNotificationSettings({
-	    types: [
-            Ti.App.iOS.USER_NOTIFICATION_TYPE_ALERT,
-            Ti.App.iOS.USER_NOTIFICATION_TYPE_SOUND,
-            Ti.App.iOS.USER_NOTIFICATION_TYPE_BADGE
-        ]
-    });
+	if (isAndroid) {
+		console.log("OS: Android");
+	}
+	else {
+		console.log("OS: iOS");
+
+		Ti.App.iOS.registerUserNotificationSettings({
+		    types: [
+	            Ti.App.iOS.USER_NOTIFICATION_TYPE_ALERT,
+	            Ti.App.iOS.USER_NOTIFICATION_TYPE_SOUND,
+	            Ti.App.iOS.USER_NOTIFICATION_TYPE_BADGE
+	        ]
+	    });
 	}
 	console.log(">> Init notifiche");
 }
@@ -86,14 +92,14 @@ function notifica(D,M,Y,hh,mm){
 			
 		var n = Ti.App.iOS.scheduleLocalNotification({
 			alertAction: "update",
-			alertBody: ("Inizio giro controlli tra "+app.minuti+" minuti!"),
-			date: new Date(new Date(Y,M,D,hh,mm).getTime()-1000*60*app.minuti),		
+			alertBody: ("Inizio giro controlli tra "+app['minuti']+" minuti!"),
+			date: new Date(new Date(Y,M,D,hh,mm).getTime()-1000*60*app['minuti']),		
 			sound: "/alarm.mp3"
 		});
 		n.addEventListener('click', function(){
 			$.refresh_tab.setVisible(true);
 		});
-		console.log("Alarm set: "+String(new Date(new Date(Y,M,D,hh,mm).getTime()-1000*60*app.minuti)));
+		console.log("Alarm set: "+String(new Date(new Date(Y,M,D,hh,mm).getTime()-1000*60*app['minuti'])));
 	}
 	else {
 		console.log("Il giorno è già passato");
@@ -197,7 +203,7 @@ function cambiaCod(indexImpostazione, titolo, messaggio){
 			}
 			if (indexImpostazione == 1){
 				if (isNaN(e.text)==false){
-					app.minuti = Number(e.text);
+					app['minuti'] = Number(e.text);
 				}
 				else{
 					//console.log("Inserire un valore numerico!");
@@ -292,7 +298,7 @@ function getData(primo) {
 	    */	
 	});
 	
-	url_target = urlRicezione.concat(app.cod_op);
+	url_target = app['urlRicezione'].concat(app.cod_op);
 	xhr.open("GET", url_target);
 	xhr.send();
 	wait(500);
@@ -345,7 +351,7 @@ function invioDaydone(mess){
 	
 	client.open(
 		"POST",
-		urlDaydone,
+		app['urlDaydone'],
 		true
 		);
 	client.setRequestHeader(
@@ -408,7 +414,7 @@ function controlloSez(){
 				
 				//Mando una richiesta all'url indicato per far segnare come fatta una giornata per un reparto.
 				var urlFineReparto = (
-					urlBase + "checks/"+
+					app['urlBase'] + "checks/"+
 					app.json.n_matr + "/planning/"+
 					app.json.reparti[i].id+"/done/"
 					);
@@ -721,7 +727,7 @@ $.sett0.addEventListener('click',function(){
 $.sett1.addEventListener('click', function(){
 	cambiaCod(
 		1,
-		("Attuale: "+app.minuti + "min"),
+		("Attuale: "+app['minuti'] + "min"),
 		(
 		"Valore che indica quanto prima si vuole ricevere la notifica, rispetto all'orario di inizio del giro."+'\n'+'\n'+
 		"ATTENZIONE: gli allarmi gia' impostati non verranno modificati.")
@@ -731,7 +737,7 @@ $.sett1.addEventListener('click', function(){
 $.sett2.addEventListener('click', function(){
 	cambiaCod(
 		2,
-		("Attuale: "+app.minuti + "min"),
+		("Attuale: "+app['minuti'] + "min"),
 		("Inserire indirizzo base del database. (Attuale: "+app["urlBase"]+")")
 	);
 });
