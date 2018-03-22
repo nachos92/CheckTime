@@ -1,24 +1,46 @@
 <Alloy>
 	<TabGroup>
-		<Tab title="Benvenuto" icon="KS_nav_ui.png">
+		<Tab title="Home" icon="KS_nav_ui.png">
 			<Window id="mainWindow">
+				<AlertDialog id="dialog0" title="Attenzione"
+								message="Inserire codice operatore:"
+								onClick="primaDialog" keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD">
+								<View platform="android">
+									<TextField id="start_input"
+										keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD"
+										width="10%"></TextField>
+								</View>
+								<ButtonNames>            						
+						            <ButtonName>Salva</ButtonName>
+        						</ButtonNames>
+								</AlertDialog>
 				<Label id="titolo" top="0"></Label>
-				<Button id="refresh_tab" onClick="refresh">Refresh</Button>
-				<AlertDialog id="dialog" onClick="clickDialog" title="ATTENZIONE"
-            		message="Inserire codice operatore:" persistent="true" cancel="1"
-            		style= "Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT">
-        		</AlertDialog>
+				
+				<Button id="info" onClick="showInfo"></Button>
+				<Button id="refresh_tab" onClick="aggiornamento"></Button>
+				
 				<TableView id='elenco' class='container'></TableView>
 				
-				<Button onClick="play" visible="false">Play sound</Button>
-				<Button id="info" onClick="showInfo">Info</Button>
+				<Button bottom="10%" onClick="stampa">DATE</Button>
+				
 			</Window>
 		</Tab>
 		<Tab title="Impostazioni" icon="KS_nav_views.png">
-			<Window title="Impostazioni">
+			<Window id="win2" title="Impostazioni">
 				<TableView id="tabImpostazioni"scrollable="false">
-					<TableViewSection id="lista" title="Generali">
-						<TableViewRow id="sett0" title="Codice operatore"/>							
+					<TableViewSection id="lista" headerTitle="Generali">
+						<TableViewRow id="sett0" title="Codice operatore">
+							<AlertDialog id="d_sett0">
+								<View platform="android">
+									<TextField id="input"								
+										width="10%"></TextField>
+								</View>
+								<ButtonNames>
+            						<ButtonName>Annulla</ButtonName>
+						            <ButtonName>Salva</ButtonName>
+        						</ButtonNames>
+							</AlertDialog>
+						</TableViewRow>							
 						<TableViewRow id="sett1" title="Preavviso allarme (min)"/>
 						<TableViewRow id="sett2" title="URL base"/>
 					</TableViewSection>

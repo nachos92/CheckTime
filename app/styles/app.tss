@@ -24,3 +24,36 @@ overrode the settings with other TSS, XML, or JS settings:
 }
 
 */
+"Window": {
+	//backgroundColor: "#FFFEEE"
+	backgroundColor: "#eff5f5"
+}
+
+"AlertDialog":{
+	canceledOnTouchOutside : 'false'
+}
+
+"TableViewRow":{
+	backgroundColor: 'white',	
+	//borderColor: 'black',
+	//borderRadius: '1',
+	color: 'black',
+	height: '40',
+	font: {
+		fontSize: 20,
+		fontFamily: 'Helvetica Neue'
+	}
+}
+
+"TableViewSection":{
+	font: {
+		fontSize: 20,
+		fontFamily: 'Helvetica Neue'
+	}
+}
+
+'TableView': {
+	borderRadius: '1',
+	top: '10%',
+	height: '100%'
+}

@@ -1,7 +1,3 @@
-"Window": {
-	backgroundColor: "#FFFEEE"
-}
-
 
 "Label": {
 	width: Ti.UI.SIZE,
@@ -19,29 +15,29 @@
 } 
 
 "#refresh_tab":{
-	height: '20',
-	length: '20',
-	top: '2%',
+	height: '40',
+	width: '40',
+	top: '1%',
 	right:'3%',
-	backgroundColor: 'green',
+	//borderColor: 'black',
+	//borderRadius: '1',	
+	backgroundImage: '/refresh2.png'
 	
 }
 
 "#info":{
-	height: '20',
-	length: '20',
-	top: '2%',
+	//scaleX: '1',
+	//scaleY: '1',		
+	top: '1%',
 	left:'3%',
-	backgroundColor: 'red'
+	height: '40',
+	width: '40',
+	//borderColor: 'black',
+	//borderRadius: '1',
+	backgroundImage: '/icon2.png',
 }
 
 
-'TableView': {
-	borderRadius: '1',
-	borderColor: "black",
-	top: '10%',
-	height: '90%'
-}
 "#tabImpostazioni":{
 	top:'0',
 	height: '100%'
