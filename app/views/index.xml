@@ -2,13 +2,12 @@
 	<TabGroup>
 		<Tab title="Home" icon="KS_nav_ui.png">
 			<Window id="mainWindow">
-				<AlertDialog id="dialog0" title="Attenzione"
-								message="Inserire codice operatore:"
-								onClick="primaDialog" keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD">
+				<AlertDialog id="dialog0" title="Attenzione" message="Inserire codice operatore:" onClick="primaDialog" keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD">
 								<View platform="android">
 									<TextField id="start_input"
 										keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD"
-										width="10%"></TextField>
+										textAlign="Ti.UI.TEXT_ALIGNMENT_CENTER"
+										width="10%"/>
 								</View>
 								<ButtonNames>            						
 						            <ButtonName>Salva</ButtonName>
@@ -22,30 +21,32 @@
 				<TableView id='elenco' class='container'></TableView>
 				
 				<Button bottom="10%" onClick="stampa">DATE</Button>
+				<Button bottom="20%" onClick="servizio">Notifica Android</Button>
 				
 			</Window>
 		</Tab>
 		<Tab title="Impostazioni" icon="KS_nav_views.png">
 			<Window id="win2" title="Impostazioni">
+				<AlertDialog id="d_sett0">
+					<View platform="android">
+						<TextField id="input" textAlign="Ti.UI.TEXT_ALIGNMENT_CENTER"/>
+					</View>
+					<ButtonNames>
+            			<ButtonName>Annulla</ButtonName>
+            			<ButtonName>Salva</ButtonName>
+            		</ButtonNames>
+            	</AlertDialog>
 				<TableView id="tabImpostazioni"scrollable="false">
 					<TableViewSection id="lista" headerTitle="Generali">
 						<TableViewRow id="sett0" title="Codice operatore">
-							<AlertDialog id="d_sett0">
-								<View platform="android">
-									<TextField id="input"								
-										width="10%"></TextField>
-								</View>
-								<ButtonNames>
-            						<ButtonName>Annulla</ButtonName>
-						            <ButtonName>Salva</ButtonName>
-        						</ButtonNames>
-							</AlertDialog>
 						</TableViewRow>							
-						<TableViewRow id="sett1" title="Preavviso allarme (min)"/>
-						<TableViewRow id="sett2" title="URL base"/>
+						<TableViewRow id="sett1" title="Preavviso allarme (min)">					
+						</TableViewRow>
+						<TableViewRow id="sett2" title="URL base">							
+						</TableViewRow>
 					</TableViewSection>
 				</TableView>
-				<Button bottom="10%" onClick="suona">SALVA</Button>
+				<Button bottom="10%" borderColor='black' onClick="suona">SALVA</Button>
 			</Window>
 		</Tab>
 	</TabGroup>

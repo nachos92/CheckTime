@@ -3,5 +3,16 @@
 		<TableView id="tabDettaglio"></TableView>
 		<Button top='10%' width='90%' onClick='closeDetail'>Annulla</Button>
 		<Button bottom='2%' width='90%' onClick="conferma">CONFERMA</Button>
+		<AlertDialog id="dConferma" keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD">
+			<View platform="android">
+				<TextField id="inputConferma" keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD"
+					textAlign="Ti.UI.TEXT_ALIGNMENT_CENTER"
+					width="10%"/>
+			</View>
+			<ButtonNames>
+            			<ButtonName>Annulla</ButtonName>
+            			<ButtonName>Ho preso visione.</ButtonName>
+            </ButtonNames>
+		</AlertDialog>
 	</Window>
 </Alloy>

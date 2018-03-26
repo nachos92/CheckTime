@@ -104,16 +104,17 @@
 	
 	function invioSegnalazione(oggetto){
 		var client = Ti.Network.createHTTPClient();
-		
+		Ti.API.info("Invio JSON a: "+$.args['urlInvio'] + $.args['persona'].n_matr + '/done/');
 		client.open(
 			"POST",
-			$.args['urlInvio'] + $.args['persona'].n_matr + '/',
+			$.args['urlInvio'] + $.args['persona'].n_matr + '/done/',
 			true);
 		client.setRequestHeader(
 			'Content-Type',
 			'application/json; charset=UTF-8'
 			);
-			
+		Ti.API.info("JSON:");
+		Ti.API.info(oggetto);
 		client.send(oggetto);
 	
 	}
@@ -123,36 +124,58 @@
 		var testo='';
 		
 		for (var key in dizModifiche){	
-			testo += key + ': ';
+			testo += key + ':'+'\t'+'\t';
 			testo += dizModifiche[key] ? "Si'" : "No"; 
 			testo += '\n';
 		}
-		/*				
-		for (i=0; i<$.args['persona'].controlli.length; i++){
-			testo+=$.args['persona'].controlli[i].titolo+': '+$.args['persona'].controlli[i].value+'\n';		
-		}
-		*/
+		
+		testo += '\n'+'\n'+"Per confermare, inserire il codice dipendente:";
+		
+		$.dConferma.setTitle("Riepilogo");
+		$.dConferma.setMessage(testo);
+		/*
 		var dConferma = Ti.UI.createAlertDialog({
-			title: "Riepilogo con conferma del dipendente",
+			title: "Riepilogo",
 			message: testo,
 			buttonNames: ['Annulla','Ho preso visione.'],
 			font: {
 				fontSize: 16
 			}
 		});
+		*/
 		
-		dConferma.addEventListener('click', function(e){
-			console.log("INDICE: "+e.index);
+		if ($.args['isAndroid']){
+			
+		}
+		else {
+			$.dConferma.setPersistent(true);
+			$.dConferma.setStyle(Ti.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
+
+		}
+		
+		$.dConferma.addEventListener('click', function(e){
+			Ti.API.info("INDICE: "+e.index);
 			if (e.index == 0) {
-				console.log("Annullamento");
+				Ti.API.info("Annullamento");
 			}
 			else {
-				// ------------------------------------------------ Apertura acquisizione QR code
 	
-				console.log("Il dipendente ha confermato");
-				if ($.args['DEBUG']){
-					console.log("Acquisizione sospesa --> $.args['DEBUG']");
+				Ti.API.info("Il dipendente ha confermato");
+				if ($.args['noScan']){
+					Ti.API.info("Acquisizione sospesa --> $.args['DEBUG']");
+					Ti.API.info("Conferma con matricola");
 					
+					/*
+					if (
+						($.args['isAndroid'] && $.inputConferma.value == $.args['persona'].n_matr) ||
+						($.args['isAndroid'] == false && e.text == $.args['persona'].n_matr) == false
+						) { 
+						return;
+					}
+					else {
+							
+					}
+					*/
 				}
 				else {
 				/**
@@ -247,24 +270,32 @@
 				 * Se ci sono dei controlli negativi, ovvero se arrayNomi è vuoto,
 				 * creo ed invio un json.
 				 */
+				var messaggio = '{';
 				if (arrayNomi.length != 0){
 	
-					var messaggio = '{"controlli":[';
+					messaggio += '"controlli":[';
 					var i=0;
 					for (i=0; i<arrayNomi.length; i++){
 						messaggio += '{"titolo":"'+arrayNomi[i]+'"}';
 						if (i< (arrayNomi.length -1))
 							messaggio += ',';
 					}			
-					messaggio += ']}';
-					
-					//invioSegnalazione(messaggio);	
+					messaggio += ']';											
 				}
+				
+				messaggio += '}';
+				/**
+				 * Invio anche in caso non ci siano controlli
+				 * con esito negativo.
+				 * In questo modo riesco (da server) a impostare come
+				 * 'fatto' un dipendente.
+				 */
+				invioSegnalazione(messaggio);
 				
 				$.args['persona'].fatto = 'T';			
 				$.detail.close();			
 			}
 		});
 		
-		dConferma.show();	
+		$.dConferma.show();	
 	}

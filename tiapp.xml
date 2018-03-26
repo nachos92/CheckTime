@@ -5,9 +5,9 @@
     <version>1.0</version>
     <publisher>nico</publisher>
     <url>https://it.wikipedia.org</url>
-    <description>undefined</description>
-    <copyright>2017 by nico</copyright>
-    <icon>appicon.png</icon>
+    <description>not specified</description>
+    <copyright>Nico Coriale, 2018</copyright>
+    <icon>icon_work.png</icon>
     <fullscreen>false</fullscreen>
     <navbar-hidden>false</navbar-hidden>
     <analytics>true</analytics>
@@ -41,11 +41,15 @@
             </dict>
         </plist>
     </ios>
-    <android xmlns:android="http://schemas.android.com/apk/res/android"/>
+    <android xmlns:android="http://schemas.android.com/apk/res/android">
+    	<services>
+    		<service url="serviceNotifiche.js" type="interval" />
+        </services>
+    </android>
     <modules/>
     <deployment-targets>
         <target device="android">true</target>
-        <target device="ipad">false</target>
+        <target device="ipad">true</target>
         <target device="iphone">true</target>
     </deployment-targets>
     <sdk-version>7.1.0.GA</sdk-version>
