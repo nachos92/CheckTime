@@ -6,12 +6,14 @@ var app = {};
 
 app['DEBUG'] = true;
 app['noScan'] = true;
+app['invioSegnalazione'] = false;
+
 app['timezoneOffset'] = 60;
 
 app['isAndroid'] = (Ti.Platform.osname=='android') ? true : false;
 
 app['primaGet'] = true;
-//app['urlBase'] = "http://192.168.0.101:8080/";
+//app['urlBase'] = "http://155.185.73.210:8080/";
 app["urlBase"] = (app['isAndroid']) ? "http://10.0.2.2:8000/" : "http://127.0.0.1:8000/";
 app['urlRicezione'] = app['urlBase'] + "checks/";
 app['urlInvio'] = app['urlBase'] + "checks/dipendente/";
@@ -21,47 +23,13 @@ app['minuti'] = 30;
 app['messaggio'] = '';
 
 
-var xhr = Ti.Network.createHTTPClient({
-		timeout : 3000,		
-		onload : function() {
-			Ti.API.info("Chiamata funzione ONLOAD di xhr.");
-			
-			if (this.getStatus() == 200) {
-				Ti.API.info("Parsing json...");
-				app['json'] = JSON.parse(this.responseText);
 
-			}
-		},
-		onerror: function(){
-			
-			//console.log("Httpclient --> Error Code: "+this.getStatus());
-			
-			if (app['primaGet']==false && this.getStatus() == 404)
-				alert("Errore 404 - Il n_matr inserito non è valido.");
-			else if (this.getStatus() == 301){
-				
-				Ti.UI.createAlertDialog({
-					title:"Errore 301"
-				}).show();
-				app['primaGet'] = true;	
-			}
-			else {
-				alert("Errore: HTTP Error "+this.getStatus());
-			}	
-		}
-	});
-/**
- * Quanti minuti prima dell'orario di inizio del giro si vuole mandare la notifica.
- */
 
 
 
 
 /*
  * ----------------------------------------------------------------------inizio DICHIARAZIONE FUNZIONI
- */
-/**
- * Riproduce un suono.
  */
 
 function stampa(){
@@ -101,7 +69,19 @@ function setRefreshVisible(attivazione){
 }
 
 function cambiaTitolo(stringa){
-	$.mainWindow.setTitle(stringa);
+	if (app['isAndroid']){
+		$.titolo.setFont({
+		fontSize: 30,
+		fontFamily: 'Helvetica Neue'
+	});
+
+		$.titolo.setText(stringa);
+	}
+	else {
+		$.mainWindow.setTitle(stringa);
+	}
+	
+	
 }
 
 /**
@@ -126,71 +106,45 @@ function initNotifiche(){
 	}
 }
 
-function suona(){
+function provanotifica(){
 	if (app['isAndroid']){
+			
+		// Create an intent using the JavaScript service file
+		var intent = Ti.Android.createServiceIntent({
+		    url : 'serviceNotifiche.js'
+		});
+		 
+		// Set the interval to run the service; set to five seconds in this example
+		intent.putExtra('interval', 1000);
+		 
+		// Send extra data to the service; send the notification 30 seconds from now in this example
+		intent.putExtra('timestamp', new Date(new Date().getTime() + 5 * 1000));
 		
+		intent.putExtra('minuti', String(app['minuti']));
+		 
+		intent.putExtra('title', "Attenzione!");
+		intent.putExtra('message', "Questa è una notifica di prova.");
+		
+ 
+		
+		// Start the service
+		Ti.Android.startService(intent);
+
 	}
 	else {
 		var d = Ti.App.iOS.scheduleLocalNotification({
 			alertAction: "update",
 			alertBody: ("Ciao ciao!"),
 			badge: 0,
-			repeat: 'weekly',
-			date: new Date(new Date().getTime()+3000),		
+			date: new Date(new Date().getTime()+5000),		
 			sound: "/alarm.mp3"
-		});
-	
+		});	
 		d.addEventListener('click', function(){
 			$.refresh_tab.setVisible(true);
 		});
 	}
 }
 
-/**
- * It is a try: it runs when i push a button
- */
-function servizio(){
-	var timestamp = new Date(new Date().getTime() + 10 * 1000);
-	var data = new Date();
-	
-	console.log("Timestamp: "+timestamp);
-	console.log("Data: "+data);
-	
-	//console.log("Impostazione notifica: "+ new Date(new Date().getTime() +  5*1000 ));
-	
-	if (app['isAndroid']){
-		var ritardo_sec = 5;
-		
-		var notification = Titanium.Android.createNotification({
-    		contentTitle: 'ATTENZIONE!',
-    		contentText : ("Inizio giro controlli tra "+app['minuti']+" minuti!"),
-    		contentIntent: Ti.Android.createPendingIntent({intent: Ti.Android.createIntent({})}),
-    		//icon: Ti.App.Android.R.drawable.warn,
-    		//number: 5,
-    		when: new Date(new Date().getTime() +  5*1000 ),
-    		// Sound file located at /platform/android/res/raw/sound.wav
-			//sound: '/alarm.mp3'
-		});
-		
-		// Send the notification
-    	Ti.Android.NotificationManager.notify(1, notification);
-    
-    	// Stop the service once the notification is sent
-    	//Ti.Android.stopService(serviceIntent);
-		
-		
-		/*
-		var intent = Ti.Android.createServiceIntent({
-	        	url : 'serviceNotifiche.js'
-	    	});
-	    intent.putExtra('title' , 'ATTENZIONE!');
-	    intent.putExtra('message' , ("Inizio giro controlli tra "+app['minuti']+" minuti!"));
-	    intent.putExtra('timestamp', new Date(new Date().getTime() + 10 * 1000));
-	   	intent.putExtra('interval', 3000);
-	    Ti.Android.startService(intent);
-	    */
-	}
-}
 
 /**
  * Creo la notifica se data e orario attuale ("now") sono 'inferiori' alla data e l'ora
@@ -219,28 +173,35 @@ function notifica(day,month,year,hh,mm){
         	url : 'serviceNotifiche.js'
     	});
     	intent.putExtra('title' , 'ATTENZIONE!');
-    	intent.putExtra('message' , ("Inizio giro controlli tra "+app['minuti']+" minuti!"));
-    	intent.putExtra('timestamp', new Date(data-app['minuti']*60*1000));
-   		intent.putExtra('interval', 3000);
+    	intent.putExtra('message' , ("Inizio giro controlli tra "+String(app['minuti'])+" min."));
+    	intent.putExtra('interval', 3000);
+    	
+    	timestamp = new Date(data-app['minuti']*60*1000);
+    	
+    	if (timestamp < new Date()){
+    		//Settimana dopo
+    		intent.putExtra('timestamp', new Date(timestamp.getTime() + 1000*60*60*24*7));
+    		Ti.API.info("Notifica impostata in data: "+String( new Date(timestamp.getTime() + 1000*60*60*24*7)));
+    	}
+    	else {
+    		intent.putExtra('timestamp', timestamp);
+    		Ti.API.info("Notifica impostata in data: "+ String(timestamp));
+
+    	}
+    	
+   		
+   		/*
+   		 * Se la data è superata, imposto la notifica per lo stesso giorno però
+   		 * nella settimana successiva.
+   		 */
+   		
+   		
+   		
+   		
+   		
+   		
     	Ti.Android.startService(intent);
-		/*
-		var notification = Titanium.Android.createNotification({
-    		contentTitle: 'ATTENZIONE!',
-    		contentText : ("Inizio giro controlli tra "+app['minuti']+" minuti!"),
-    		//contentIntent: Ti.Android.createPendingIntent({intent: Ti.Android.createIntent({})}),
-    		//icon: Ti.App.Android.R.drawable.warn,
-    		//number: 5,
-    		when: new Date(data-app['minuti']*60*1000),
-    		// Sound file located at /platform/android/res/raw/sound.wav
-			//sound: Ti.Filesystem.getResRawDirectory() + 'sound.wav',
-		});
-		
-		// Send the notification
-    	Ti.Android.NotificationManager.notify(1, notification);
-    
-    	// Stop the service once the notification is sent
-    	Ti.Android.stopService(serviceIntent);
-    	*/    	
+		   	
 	}
 	else {		
 		var n = Ti.App.iOS.scheduleLocalNotification({
@@ -251,8 +212,9 @@ function notifica(day,month,year,hh,mm){
 			repeat: 'weekly',
 			sound: "/alarm.mp3"
 		});					
+		Ti.API.info("Allarme impostato:"+'\t'+new Date(data-app['minuti']*60*1000));
 	}		
-	Ti.API.info("Allarme impostato:"+'\t'+new Date(data-app['minuti']*60*1000));		
+			
 }
 
 
@@ -268,9 +230,8 @@ function registraNotifiche(){
 	orario.setHours(app['json'].reparti[0].orario.lun.orario.substring(0,2));
 	orario.setMinutes(app['json'].reparti[0].orario.lun.orario.substring(3,5));
 		
-	//Azzeramento delle notifiche.
+	//Azzeramento delle notifiche preesistenti.
 	if(app['isAndroid']) {
-		// Remove all notifications sent by the application
 		Titanium.Android.NotificationManager.cancelAll();
 	}
 	else {
@@ -278,148 +239,119 @@ function registraNotifiche(){
 	}
 	
 	for (var r=0; r<app['json'].reparti.length; r++){
-			var inizio = new Date(app['json'].reparti[0].data_inizio);			
-			notifica(
-				(inizio.getDate()+0),
-				(inizio.getMonth()),
-				(inizio.getFullYear()),
-				(app['json'].reparti[r].orario.lun.orario.substring(0,2)),
-				(app['json'].reparti[r].orario.lun.orario.substring(3,5))
-			);
+			var inizio = new Date(app['json'].reparti[0].data_inizio);
+			if(app['json'].reparti[0].orario.lun.orario)		
+				notifica(
+					(inizio.getDate()+0),
+					(inizio.getMonth()),
+					(inizio.getFullYear()),
+					(app['json'].reparti[r].orario.lun.orario.substring(0,2)),
+					(app['json'].reparti[r].orario.lun.orario.substring(3,5))
+				);
 			
-			notifica(
-				(inizio.getDate()+1),
-				(inizio.getMonth()),
-				(inizio.getFullYear()),
-				(app['json'].reparti[r].orario.mar.orario.substring(0,2)),
-				(app['json'].reparti[r].orario.mar.orario.substring(3,5))
-			);
+			if(app['json'].reparti[0].orario.mar.orario)		
+				notifica(
+					(inizio.getDate()+1),
+					(inizio.getMonth()),
+					(inizio.getFullYear()),
+					(app['json'].reparti[r].orario.mar.orario.substring(0,2)),
+					(app['json'].reparti[r].orario.mar.orario.substring(3,5))
+				);
 			
-			notifica(
-				(inizio.getDate()+2),
-				(inizio.getMonth()),
-				(inizio.getFullYear()),
-				(app['json'].reparti[r].orario.mer.orario.substring(0,2)),
-				(app['json'].reparti[r].orario.mer.orario.substring(3,5))
-			);
+			if(app['json'].reparti[0].orario.mer.orario)			
+				notifica(
+					(inizio.getDate()+2),
+					(inizio.getMonth()),
+					(inizio.getFullYear()),
+					(app['json'].reparti[r].orario.mer.orario.substring(0,2)),
+					(app['json'].reparti[r].orario.mer.orario.substring(3,5))
+				);
 			
-			notifica(
-				(inizio.getDate()+3),
-				(inizio.getMonth()),
-				(inizio.getFullYear()),
-				(app['json'].reparti[r].orario.gio.orario.substring(0,2)),
-				(app['json'].reparti[r].orario.gio.orario.substring(3,5))
-			);
+			if(app['json'].reparti[0].orario.gio.orario)		
+				notifica(
+					(inizio.getDate()+3),
+					(inizio.getMonth()),
+					(inizio.getFullYear()),
+					(app['json'].reparti[r].orario.gio.orario.substring(0,2)),
+					(app['json'].reparti[r].orario.gio.orario.substring(3,5))
+				);
 			
-			notifica(
-				(inizio.getDate()+4),
-				(inizio.getMonth()),
-				(inizio.getFullYear()),
-				(app['json'].reparti[r].orario.ven.orario.substring(0,2)),
-				(app['json'].reparti[r].orario.ven.orario.substring(3,5))
-			);			
+			if(app['json'].reparti[0].orario.ven.orario)		
+				notifica(
+					(inizio.getDate()+4),
+					(inizio.getMonth()),
+					(inizio.getFullYear()),
+					(app['json'].reparti[r].orario.ven.orario.substring(0,2)),
+					(app['json'].reparti[r].orario.ven.orario.substring(3,5))
+				);
+				
+			if(app['json'].reparti[0].orario.sab.orario)		
+				notifica(
+					(inizio.getDate()+5),
+					(inizio.getMonth()),
+					(inizio.getFullYear()),
+					(app['json'].reparti[r].orario.sab.orario.substring(0,2)),
+					(app['json'].reparti[r].orario.sab.orario.substring(3,5))
+				);
+				
+			if(app['json'].reparti[0].orario.dom.orario)		
+				notifica(
+					(inizio.getDate()+6),
+					(inizio.getMonth()),
+					(inizio.getFullYear()),
+					(app['json'].reparti[r].orario.dom.orario.substring(0,2)),
+					(app['json'].reparti[r].orario.dom.orario.substring(3,5))
+				);			
 		}			
 }
-
-function cambiaCod(indexImpostazione, titolo, messaggio){
-	
-	$.d_sett0.setTitle(titolo);
-	$.d_sett0.setMessage(messaggio);
-	
-	
-	if(!app['isAndroid']){
-		$.d_sett0.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
-	}
-	
-	$.d_sett0.addEventListener('click', function(e){
-		if (e.index == 0){
-			Ti.API.info("Annullamento");
-		}
-		else {
-			if(indexImpostazione == 0) {			
-				if (app['isAndroid']){
-					if ($.input.value != '')
-						app['cod_op'] = $.input.value;
-					
-				}
-				else {
-					if (e.text !='')
-						app['cod_op'] = e.text;
-				}
-					
-				app['primaGet']=true;
-				
-				setRefreshVisible(true);
-				
-				app['json'] = null;
-				$.elenco.setData(null);
-				
-				getData();
-				cambiaTitolo('');
-			}
-			if (indexImpostazione == 1){
-				if (app['isAndroid']){
-					if (isNaN($.input.value)==false)
-						if ($.input.value != '')
-							app['minuti'] = Number($.input.value);
-				}
-				else{
-					if (isNaN(e.text)==false){
-						if (e.text != '')
-							app['minuti'] = Number(e.text);
-					}
-					else{
-						alert("Inserire un valore numerico!");
-						return;
-					}
-				}	
-			}
-			if (indexImpostazione == 2){
-				if (app['isAndroid']){
-					if ($.input.value != '')
-						app["urlBase"] = $.input.value;
-				}
-				else {
-					if (e.text != '')
-						app["urlBase"] = e.text;
-				}
-				app['primaGet'] = true;
-				
-				setRefreshVisible(true);
-				
-				app['json'] = null;
-				$.elenco.setData(null);
-				
-				getData();
-				cambiaTitolo("");
-			}
-			//alert("Modifica effettuata. Nuovo valore: "+e.text);
-			
-	}	
-	});
-	$.d_sett0.show();
-	//dSetting0.show();
-  
-}
-
 
 /**
  * Ottiene semplicemente il json. Per aggiornare le tabelle o visualizzare
  * dialog informative, si devono creare all'esterno della funzione.
  */
 function getData() {
+	var xhr = Ti.Network.createHTTPClient({
+		timeout : 3000,		
+		onload : function() {
+			Ti.API.info("Chiamata funzione ONLOAD di xhr.");
+			
+			if (this.getStatus() == 200) {
+				Ti.API.info("Parsing json...");
+				app['json'] = JSON.parse(this.responseText);
+
+			}
+			app['httpErr'] = false;
+		},
+		onerror: function(){
+			
+			
+			
+			if (app['primaGet']==false && this.getStatus() == 404)
+				alert("Errore 404 - Il n_matr inserito non è valido.");
+			else if (this.getStatus() == 301){
+				
+				Ti.UI.createAlertDialog({
+					title:"Errore 301"
+				}).show();
+				app['primaGet'] = false;	
+			}
+			else {
+				alert("Errore: HTTP Error "+this.getStatus());
+				app['httpErr'] = true;
+				console.log("app['httpErr]: "+app['httpErr']);
+			}	
+		}
+	});
 
 	//console.log(app['urlRicezione'].concat(app['cod_op']));
 	xhr.open("GET", app['urlRicezione'].concat(app['cod_op']));
 	
-
-	try{			
-		//wait(500);
+	try{					
 		xhr.send();
 		return 0;	
 	}
 	catch(err){
-		console.log("GetData Error: "+err);
+		Ti.API.info("GetData Error: "+err);
 		return -1;
 	}		
 }
@@ -433,7 +365,10 @@ function showInfo() {
     message: app['messaggio'],
     title: 'Informazioni'
   });
-  dialog.show();	
+  $.dialogInfo.setTitle('ORARI');
+  $.dialogInfo.setMessage(app['messaggio']);
+  $.dialogInfo.show();
+  //dialog.show();	
 }
 
 function showDialog() {
@@ -550,30 +485,27 @@ function creaInfo() {
 	for (r=0; r<app['json'].reparti.length; r++){
 		app['messaggio'] += 'REPARTO: '+app['json'].reparti[r].nome+'\n';
 		
-		if (app['json'].reparti[r].orario.lun.festivo == 'T')
-			app['messaggio'] += 'lun: CHIUSURA'+'\n';
-		else
-			app['messaggio'] += 'lun:'+'\t'+app['json'].reparti[r].orario.lun.orario+'\n';
 		
-		if (app['json'].reparti[r].orario.mar.festivo == 'T')
-			app['messaggio'] += 'mar: CHIUSURA'+'\n';
-		else
-			app['messaggio'] += 'mar:'+'\t'+app['json'].reparti[r].orario.mar.orario+'\n';
+		app['messaggio'] += (app['json'].reparti[r].orario.lun.orario) ?
+			'lun:   '+app['json'].reparti[r].orario.lun.orario+'\n' : '';
+			
+		app['messaggio'] += (app['json'].reparti[r].orario.mar.orario) ?
+			'mar:   '+app['json'].reparti[r].orario.mar.orario+'\n' : '';				
 		
-		if (app['json'].reparti[r].orario.mer.festivo == 'T')
-			app['messaggio'] += 'mer: CHIUSURA'+'\n';
-		else
-			app['messaggio'] += 'mer:'+'\t'+app['json'].reparti[r].orario.mer.orario+'\n';
-		
-		if (app['json'].reparti[r].orario.gio.festivo == 'T')
-			app['messaggio'] += 'gio: CHIUSURA'+'\n';
-		else
-			app['messaggio'] += 'gio:'+'\t'+app['json'].reparti[r].orario.gio.orario+'\n';
-		
-		if (app['json'].reparti[r].orario.ven.festivo == 'T')
-			app['messaggio'] += 'ven: CHIUSURA'+'\n';
-		else
-			app['messaggio'] += 'ven:'+'\t'+app['json'].reparti[r].orario.ven.orario+'\n';
+		app['messaggio'] += (app['json'].reparti[r].orario.mer.orario) ?
+			'mer:   '+app['json'].reparti[r].orario.mer.orario+'\n' : '';
+	
+		app['messaggio'] += (app['json'].reparti[r].orario.gio.orario) ?
+			'gio:   '+app['json'].reparti[r].orario.gio.orario+'\n' : '';
+	
+		app['messaggio'] += (app['json'].reparti[r].orario.ven.orario) ?
+			'ven:   '+app['json'].reparti[r].orario.ven.orario+'\n' : '';
+			
+		app['messaggio'] += (app['json'].reparti[r].orario.sab.orario) ?
+			'sab:   '+app['json'].reparti[r].orario.sab.orario+'\n' : '';
+			
+		app['messaggio'] += (app['json'].reparti[r].orario.dom.orario) ?
+			'dom:   '+app['json'].reparti[r].orario.dom.orario+'\n' : '';
 		
 		app['messaggio'] +='\n';
 	}
@@ -636,9 +568,10 @@ function makeTab() {
 				
 				if (app['json'].reparti[rep].dipendenti[dip].fatto == 'F') {
 					var d = Ti.UI.createTableViewRow({
-						title: (
-								app['json'].reparti[rep].dipendenti[dip].n_matr +' - '+
-								app['json'].reparti[rep].dipendenti[dip].cognome
+						title: (								
+								app['json'].reparti[rep].dipendenti[dip].cognome +' '+
+								app['json'].reparti[rep].dipendenti[dip].nome + ' ('+
+								app['json'].reparti[rep].dipendenti[dip].n_matr +')'
 							),
 						color: 'black',
 						font: {
@@ -646,7 +579,9 @@ function makeTab() {
 							fontFamily: 'Helvetica Neue'
 						},
 						backgroundColor: 'white',
-						hasChild: true
+						hasChild: true,
+						n_matr: app['json'].reparti[rep].dipendenti[dip].n_matr
+
 						});
 					
 					/**
@@ -654,18 +589,18 @@ function makeTab() {
 					 */
 					d.addEventListener('click',function(e){				
 						
-						console.log("Row data: "+e.row.title.match(/\d+/g).map(Number));
+						app['n_matr'] = e.row.title.n_matr;
+						
 						/*
 						 * Ricerca dell'elemento corrispondente alla riga cliccata, e attribuzione del valore 
 						 * ad una variabile. 
-						 */
-						
+						 */						
 						for (i=0; i<app['json'].reparti.length; i++){
 							var fatto = false;
 							for (j=0; j<app['json'].reparti[i].dipendenti.length; j++){
-								app['persona'] = app['json'].reparti[i].dipendenti[j];
+								app['matricola'] = app['json'].reparti[i].dipendenti[j];
 																
-								if (app['persona'].n_matr == e.row.title.match(/\d+/g).map(Number)) {
+								if (app['matricola'].n_matr == e.row.title.n_matr) {
 									fatto = true;
 									break;
 								}
@@ -683,8 +618,8 @@ function makeTab() {
 						
 						dettaglio.addEventListener('close', function(){
 							
-							Ti.API.info("Persona.fatto: "+app['persona'].fatto);
-							if(app['persona'].fatto == 'T'){
+							Ti.API.info("Persona.fatto: "+app['matricola'].fatto);
+							if(app['matricola'].fatto == 'T'){
 								//console.log("Eliminazione riga "+e.index);
 								//console.log("Sezione - "+sez.indice);
 																
@@ -706,7 +641,7 @@ function makeTab() {
 								
 								xhr_fatto.open(
 									"GET",
-									app['urlBase'].concat("checks/dipendente/").concat(app['persona'].n_matr)
+									app['urlBase'].concat("checks/dipendente/").concat(app['matricola'].n_matr)
 									);
 								
 								//xhr_fatto.send();
@@ -756,7 +691,7 @@ function primaDialog(e) {
 	
 	getData();
 	wait(500);
-	getData();
+	if (app['httpErr']) getData();
 	
 	makeTab();	
 }
@@ -773,39 +708,143 @@ function primaDialog(e) {
 
 $.sett0.addEventListener('click',function(){
 	
-	if (app['isAndroid']) $.input.setWidth("20%");
-	if (app['isAndroid']) $.input.setValue(app['cod_op']);
+	if (app['isAndroid']) {
+		$.input.setWidth("20%");
+		$.input.setValue(app['cod_op']);		
+	}
+	else {
+		$.d_sett0.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
+		$.d_sett0.setValue(app['cod_op']);		
+	}
 	
-	cambiaCod(0, "Modifica codice operatore",
-			("Attuale: "+app['cod_op'])
-	);
+	$.d_sett0.setTitle("Modifica codice operatore");
+	$.d_sett0.setMessage("Attuale: "+app['cod_op']);
+	
+	
+	
+	if(!app['isAndroid']){
+		$.d_sett0.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
+	}
+	else {
+		$.input.setSelection(0,String($.input.value).length);
+	}
+	
+	$.d_sett0.addEventListener('click', function(e){
+		if (e.index == 0){
+			Ti.API.info("Annullamento");
+		}
+		else {
+				if (app['isAndroid']){
+					if ($.input.value != '')
+						app['cod_op'] = $.input.value;
+					
+				}
+				else {
+					if (e.text !='')
+						app['cod_op'] = e.text;
+				}
+					
+				app['primaGet']=true;
+				
+				setRefreshVisible(true);
+				
+				app['json'] = null;
+				$.elenco.setData(null);
+				
+				getData();
+				cambiaTitolo('');
+		}	
+	});
+	$.d_sett0.show();
+  
+
+
 });	
 
+$.d_sett1.addEventListener('click', function(e){
+	if (e.index == 0){
+		//console.log("ANNULLAMENTO");
+	}
+	else {
+		if (app['isAndroid']){
+		if (isNaN($.input1.value)==false)
+			if ($.input1.value != '')
+				app['minuti'] = Number($.input1.value);
+		}
+		else{
+			if (isNaN(e.text)==false){
+				if (e.text != '')
+					app['minuti'] = Number(e.text);
+			}
+			else{
+				alert("Inserire un valore numerico!");
+				return;
+			}
+		}
+	}
+});
 
 $.sett1.addEventListener('click', function(){
 	
-	if (app['isAndroid']) $.input.setWidth("20%");
-	if (app['isAndroid']) $.input.setValue(app['minuti']);
+	if (app['isAndroid'])  {
+		$.input1.setWidth("20%");
+		$.input1.setValue(app['minuti']);
+		$.input1.setSelection(0,String($.input1.value).length);
+	}
+	else {
+		$.d_sett1.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
+		$.d_sett1.setValue(app['minuti']);
+	}
+		
+	$.d_sett1.setTitle("Modifica preavviso allarme");
+	$.d_sett1.setMessage(
+		("Valore che indica quanto prima si vuole ricevere la notifica, rispetto all'orario di inizio del giro."+'\n'+'\n'+
+		"ATTENZIONE: gli allarmi gia' impostati non verranno modificati."));
 	
-	cambiaCod(
-		1,
-		("Attuale: "+app['minuti'] + "min"),
-		(
-		"Valore che indica quanto prima si vuole ricevere la notifica, rispetto all'orario di inizio del giro."+'\n'+'\n'+
-		"ATTENZIONE: gli allarmi gia' impostati non verranno modificati.")
-	);
+	
+	$.d_sett1.show();
+});
+
+$.d_sett2.addEventListener('click',function(e){
+	
+	if (e.index == 0){
+		console.log("ANNULLAMENTO");
+	}
+	else {
+		if (app['isAndroid']){
+			if ($.input.value != '')
+				app["urlBase"] = $.input2.value;
+		}
+		else {
+			if (e.text != '')
+				app["urlBase"] = e.text;
+		}
+		app['primaGet'] = true;
+								
+		app['json'] = null;
+		$.elenco.setData(null);
+				
+		getData();
+		cambiaTitolo("");
+	}
 });
 
 $.sett2.addEventListener('click', function(){
 
-	if (app['isAndroid']) $.input.setWidth("80%");
-	if (app['isAndroid']) $.input.setValue(app['urlBase']);
+	if (app['isAndroid']) {
+		$.input2.setWidth("80%");	
+		$.input2.setValue(app['urlBase']);
+		$.input2.setSelection(0,String($.input2.value).length);
 
-	cambiaCod(
-		2,
-		("Attuale: "+app['urlBase']),
-		("Inserire indirizzo base del database:")
-	);
+	}
+	else {
+		$.d_sett2.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
+		$.d_sett2.setValue(app['urlBase']);
+	}
+	$.d_sett2.setTitle("Modifica URL server");	
+	$.d_sett2.setMessage("N.B. Deve essere scritto anteponendo 'http://'.");
+	
+	$.d_sett2.show();
 });
 
 
@@ -820,11 +859,7 @@ $.mainWindow.addEventListener('open', function() {
 });
 
 
-//---------------------------------------------inizio OPERAZIONI EFFETTIVE
-
-
-//initNotifiche();
-
+//++++++++++++++++++++++++++++++++++++++++++++ inizio OPERAZIONI EFFETTIVE
 
 
 

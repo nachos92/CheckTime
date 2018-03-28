@@ -10,6 +10,14 @@
 	textAlign: 'center'
 }
 
+"#titolo":{
+	font: {
+		fontSize: 18,
+		fontFamily: 'Helvetica Neue'
+	},
+	textAlign: 'center'
+}
+
 "Button": {
 	bottom: '10%',
 } 

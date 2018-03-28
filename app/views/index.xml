@@ -3,25 +3,30 @@
 		<Tab title="Home" icon="KS_nav_ui.png">
 			<Window id="mainWindow">
 				<AlertDialog id="dialog0" title="Attenzione" message="Inserire codice operatore:" onClick="primaDialog" keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD">
-								<View platform="android">
-									<TextField id="start_input"
-										keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD"
-										textAlign="Ti.UI.TEXT_ALIGNMENT_CENTER"
-										width="10%"/>
-								</View>
-								<ButtonNames>            						
-						            <ButtonName>Salva</ButtonName>
-        						</ButtonNames>
-								</AlertDialog>
-				<Label id="titolo" top="0"></Label>
-				
+					<View platform="android">
+						<TextField id="start_input"
+							keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD"
+							textAlign="Ti.UI.TEXT_ALIGNMENT_CENTER"
+							width="10%"/>
+					</View>
+					<ButtonNames>            						
+						<ButtonName>Salva</ButtonName>
+        			</ButtonNames>
+				</AlertDialog>
+				<Label id="titolo" top="0"> </Label>
 				<Button id="info" onClick="showInfo"></Button>
+				<AlertDialog id="dialogInfo">										
+					<ButtonNames>            						
+						<ButtonName>Chiudi</ButtonName>
+        			</ButtonNames>
+				</AlertDialog>
 				<Button id="refresh_tab" onClick="aggiornamento"></Button>
 				
 				<TableView id='elenco' class='container'></TableView>
 				
-				<Button bottom="10%" onClick="stampa">DATE</Button>
-				<Button bottom="20%" onClick="servizio">Notifica Android</Button>
+				
+				<Button bottom="10%" onClick="provanotifica">Prova notifiche</Button>
+
 				
 			</Window>
 		</Tab>
@@ -29,7 +34,29 @@
 			<Window id="win2" title="Impostazioni">
 				<AlertDialog id="d_sett0">
 					<View platform="android">
-						<TextField id="input" textAlign="Ti.UI.TEXT_ALIGNMENT_CENTER"/>
+						<TextField id="input"
+							keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD"
+							textAlign="Ti.UI.TEXT_ALIGNMENT_CENTER"/>
+					</View>
+					<ButtonNames>
+            			<ButtonName>Annulla</ButtonName>
+            			<ButtonName>Salva</ButtonName>
+            		</ButtonNames>
+            	</AlertDialog>
+            	<AlertDialog id="d_sett1">
+					<View platform="android">
+						<TextField id="input1"
+							keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD"
+							textAlign="Ti.UI.TEXT_ALIGNMENT_CENTER"/>
+					</View>
+					<ButtonNames>
+            			<ButtonName>Annulla</ButtonName>
+            			<ButtonName>Salva</ButtonName>
+            		</ButtonNames>
+            	</AlertDialog>
+            	<AlertDialog id="d_sett2">
+					<View platform="android">
+						<TextField id="input2" textAlign="Ti.UI.TEXT_ALIGNMENT_CENTER"/>
 					</View>
 					<ButtonNames>
             			<ButtonName>Annulla</ButtonName>
@@ -46,7 +73,6 @@
 						</TableViewRow>
 					</TableViewSection>
 				</TableView>
-				<Button bottom="10%" borderColor='black' onClick="suona">SALVA</Button>
 			</Window>
 		</Tab>
 	</TabGroup>

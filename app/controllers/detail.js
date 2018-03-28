@@ -3,7 +3,7 @@
 	
 	
 	
-	if (!$.args['DEBUG']) {
+	if ($.args['noScan'] == false) {
 		var scanditsdk = require('com.mirasense.scanditsdk');
 	
 		//scanditsdk.appKey = "";
@@ -38,7 +38,7 @@
 	for (iter=0; iter<2; iter++){
 		if (iter==0){
 	
-			for (i=0; i<$.args['persona'].controlli.length; i++){
+			for (i=0; i<$.args['matricola'].controlli.length; i++){
 				
 				var c = Ti.UI.createTableViewRow({
 					//title: dip.controlli[i].titolo,
@@ -55,7 +55,7 @@
 				});
 				
 				c.add(Ti.UI.createLabel({
-					text: $.args['persona'].controlli[i].titolo,
+					text: $.args['matricola'].controlli[i].titolo,
 					left: "2%",
 					color: 'black',
 					font: {
@@ -64,13 +64,13 @@
 					}
 				}));
 				
-				var statoSwitch = ($.args['persona'].controlli[i].value == 'F') ? false : true;
+				var statoSwitch = ($.args['matricola'].controlli[i].value == 'F') ? false : true;
 				
 				var s = Ti.UI.createSwitch({
 					value: statoSwitch,
-					titolo: $.args['persona'].controlli[i].titolo,
-					id: $.args['persona'].controlli[i].id,
-					nome: $.args['persona'].controlli[i].titolo,
+					titolo: $.args['matricola'].controlli[i].titolo,
+					id: $.args['matricola'].controlli[i].id,
+					nome: $.args['matricola'].controlli[i].titolo,
 					right: '2%',					
 				});
 				
@@ -80,7 +80,7 @@
 					s.setBorderRadius(5);				
 				}
 				
-				dizModifiche[$.args['persona'].controlli[i].titolo] = statoSwitch;
+				dizModifiche[$.args['matricola'].controlli[i].titolo] = statoSwitch;
 				
 				s.addEventListener('change', function(e){					
 					dizModifiche[this.titolo] = e.value;
@@ -104,10 +104,10 @@
 	
 	function invioSegnalazione(oggetto){
 		var client = Ti.Network.createHTTPClient();
-		Ti.API.info("Invio JSON a: "+$.args['urlInvio'] + $.args['persona'].n_matr + '/done/');
+		Ti.API.info("Invio JSON a: "+$.args['urlInvio'] + $.args['n_matr'] + '/done/');
 		client.open(
 			"POST",
-			$.args['urlInvio'] + $.args['persona'].n_matr + '/done/',
+			$.args['urlInvio'] + $.args['n_matr'] + '/done/',
 			true);
 		client.setRequestHeader(
 			'Content-Type',
@@ -145,7 +145,7 @@
 		*/
 		
 		if ($.args['isAndroid']){
-			
+			$.inputConferma.value = "";
 		}
 		else {
 			$.dConferma.setPersistent(true);
@@ -153,105 +153,29 @@
 
 		}
 		
-		$.dConferma.addEventListener('click', function(e){
-			Ti.API.info("INDICE: "+e.index);
+		$.dConferma.addEventListener('click', function(e){			
 			if (e.index == 0) {
 				Ti.API.info("Annullamento");
 			}
 			else {
 	
-				Ti.API.info("Il dipendente ha confermato");
 				if ($.args['noScan']){
 					Ti.API.info("Acquisizione sospesa --> $.args['DEBUG']");
-					Ti.API.info("Conferma con matricola");
-					
-					/*
-					if (
-						($.args['isAndroid'] && $.inputConferma.value == $.args['persona'].n_matr) ||
-						($.args['isAndroid'] == false && e.text == $.args['persona'].n_matr) == false
-						) { 
-						return;
+										
+					if ($.args['isAndroid']){						
+						Ti.API.info("Input_conferma.value: "+$.inputConferma.value);
+						if ($.inputConferma.value != $.args['matricola'].n_matr) return;
+						Ti.API.info("Conferma della matricola: "+$.args['matricola'].n_matr);
 					}
 					else {
-							
+						//Ti.API.info("Input_conferma.value: "+ e.text);
+						if (e.text != $.args['matricola'].n_matr) return;
+						Ti.API.info("Conferma della matricola: "+$.args['matricola'].n_matr);
 					}
-					*/
+					
 				}
 				else {
-				/**
-				 * SCANSIONE: se il codice è giusto ritorno TRUE e poi procedo con l'invio delle segnalazioni.
-				 */	
-					var openScanner = function() {
-					    // First set the app key and which direction the camera should face.
-					    scanditsdk.appKey = "--- ENTER YOUR SCANDIT APP KEY HERE ---"; 
-					    scanditsdk.cameraFacingPreference = 0;
-					    // Only after setting the app key instantiate the Scandit SDK Barcode Picker view
-					    var picker = scanditsdk.createView({
-					        width:"100%",
-					        height:"100%"
-					    });
-					    // Before calling any other functions on the picker you have to call init()
-					    picker.init();
-					    // add a tool bar at the bottom of the scan view with a cancel button (iphone/ipad only)
-					    picker.showToolBar(true);
-					    // enable a few of the barcode symbologies. Note that the below list of symbologies 
-					    // is already enabled by default in Titanium. These calls are shown for illustration 
-					    // purposes. In your application make sure to only enable symbologies that you actually 
-					    // require and turn off anything else as every additional enabled symbology slows 
-					    // down recognition.
-					    picker.setEan13AndUpc12Enabled(true);
-					    picker.setEan8Enabled(true);
-					    picker.setUpceEnabled(true);
-					    picker.setCode39Enabled(true);
-					    picker.setCode128Enabled(true);
-					    picker.setQrEnabled(true);
-					    picker.setDataMatrixEnabled(true);
-					    // Create a window to add the picker to and display it. 
-					    var window = Titanium.UI.createWindow({  
-					            title:'Scandit SDK',
-					            navBarHidden:true
-					    });
-					    
-					    // Set callback functions for when scanning succeeds and for when the 
-					    // scanning is canceled. This callback is called on the scan engine's
-					    // thread to allow you to synchronously call stopScanning or
-					    // pauseScanning. Any UI specific calls from within this function 
-					    // have to be issued through setTimeout to switch to the UI thread
-					    // first.
-					    picker.setSuccessCallback(function(e) {
-					        picker.stopScanning();
-					        
-					        setTimeout(function() {
-					            window.close();
-					            window.remove(picker);
-					            alert("success (" + e.symbology + "): " + e.barcode);
-					        }, 1);
-					    });
-					    picker.setCancelCallback(function(e) {
-					        picker.stopScanning();
-					        window.close();
-					        window.remove(picker);
-					    });
-					    window.add(picker);
-					    window.addEventListener('open', function(e) {
-					        picker.startScanning();     // startScanning() has to be called after the window is opened. 
-					    });
-					    window.open();
-					};
-				// Create button to open and start the scanner
-					var button = Titanium.UI.createButton({
-					    "width":200,
-					    "height": 80,
-					    "title": "start scanner"
-					});
-					button.addEventListener('click', function() {
-					    openScannerIfPermission();
-					});
-					var rootWindow = Titanium.UI.createWindow({
-					    backgroundColor:'#000'
-					});
-					rootWindow.add(button);
-					rootWindow.open();
+					// AGGIUNGERE SCANSIONE in futuro.
 				}
 				
 				/*
@@ -290,9 +214,9 @@
 				 * In questo modo riesco (da server) a impostare come
 				 * 'fatto' un dipendente.
 				 */
-				invioSegnalazione(messaggio);
+				if ($.args['invioSegnalazione']) invioSegnalazione(messaggio);
 				
-				$.args['persona'].fatto = 'T';			
+				$.args['matricola'].fatto = 'T';			
 				$.detail.close();			
 			}
 		});
