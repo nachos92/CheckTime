@@ -3,28 +3,29 @@
  */
 var app = {};
 
-
+/**
+ * Se è true, viene mostrato il numero matricola dei dipendenti (di fianco al nome, nella lista).
+ * Inoltre vengono mostrati i pulsanti di prova.
+ */
 app['DEBUG'] = true;
+app['password'] = "0000";
+
 app['noScan'] = true;
 app['invioSegnalazione'] = false;
 
 app['timezoneOffset'] = 60;
+app['minuti'] = 30;
+app['messaggio'] = '';
 
 app['isAndroid'] = (Ti.Platform.osname=='android') ? true : false;
 
 app['primaGet'] = true;
+
 //app['urlBase'] = "http://155.185.73.210:8080/";
 app["urlBase"] = (app['isAndroid']) ? "http://10.0.2.2:8000/" : "http://127.0.0.1:8000/";
 app['urlRicezione'] = app['urlBase'] + "checks/";
 app['urlInvio'] = app['urlBase'] + "checks/dipendente/";
 app['urlDaydone'] = app['urlBase'] + "checks/planning/daydone/";
-
-app['minuti'] = 30;
-app['messaggio'] = '';
-
-
-
-
 
 
 
@@ -71,9 +72,9 @@ function setRefreshVisible(attivazione){
 function cambiaTitolo(stringa){
 	if (app['isAndroid']){
 		$.titolo.setFont({
-		fontSize: 30,
-		fontFamily: 'Helvetica Neue'
-	});
+			fontSize: 30,
+			fontFamily: 'Helvetica Neue'
+		});
 
 		$.titolo.setText(stringa);
 	}
@@ -82,28 +83,6 @@ function cambiaTitolo(stringa){
 	}
 	
 	
-}
-
-/**
- * Operazioni preliminari che sono necessarie
- * per l'uso delle Notifiche, a seconda della piattaforma
- * di utilizzo.
- */
-function initNotifiche(){
-	if (app['isAndroid']) {
-	    Ti.API.info("Android --> Init notifiche");
-	}
-	else if (parseInt(Ti.Platform.version.split(".")[0]) >= 8){
-		
-		Ti.App.iOS.registerUserNotificationSettings({
-		    types: [
-	            Ti.App.iOS.USER_NOTIFICATION_TYPE_ALERT,
-	            Ti.App.iOS.USER_NOTIFICATION_TYPE_SOUND,
-	            Ti.App.iOS.USER_NOTIFICATION_TYPE_BADGE
-	        ]
-	    });
-	    Ti.API.info("iOS --> Init notifiche");
-	}
 }
 
 function provanotifica(){
@@ -236,6 +215,16 @@ function registraNotifiche(){
 	}
 	else {
 		Titanium.App.iOS.cancelAllLocalNotifications();
+		if (parseInt(Ti.Platform.version.split(".")[0]) >= 8){
+		
+		Ti.App.iOS.registerUserNotificationSettings({
+		    types: [
+	            Ti.App.iOS.USER_NOTIFICATION_TYPE_ALERT,
+	            Ti.App.iOS.USER_NOTIFICATION_TYPE_SOUND,
+	            Ti.App.iOS.USER_NOTIFICATION_TYPE_BADGE
+	        ]
+	    });
+		}
 	}
 	
 	for (var r=0; r<app['json'].reparti.length; r++){
@@ -324,11 +313,7 @@ function getData() {
 		},
 		onerror: function(){
 			
-			
-			
-			if (app['primaGet']==false && this.getStatus() == 404)
-				alert("Errore 404 - Il n_matr inserito non è valido.");
-			else if (this.getStatus() == 301){
+			if (this.getStatus() == 301){
 				
 				Ti.UI.createAlertDialog({
 					title:"Errore 301"
@@ -338,7 +323,7 @@ function getData() {
 			else {
 				alert("Errore: HTTP Error "+this.getStatus());
 				app['httpErr'] = true;
-				console.log("app['httpErr]: "+app['httpErr']);
+				//console.log("app['httpErr']: "+app['httpErr']);
 			}	
 		}
 	});
@@ -388,11 +373,6 @@ function showDialog() {
 /**
  * Richiede ed ottiene i dati, per poi costruire nuovamente la tabella.
  */
-/*
- * ------------- TO-DO: aggiungere alert che chiede conferma
- * (es. "Non hai ancora terminato il giro. In questo modo cancellerai i dati salvati.")
- * prima di procedere con l'aggiornamento.
- */
 function refresh() {
 		
 	Ti.API.info("PrimaGet --> "+app['primaGet']);
@@ -402,6 +382,7 @@ function refresh() {
 	if (makeTab() >= 0) {
 		
 		cambiaTitolo(app['json'].nome+' '+app['json'].cognome);
+		if (app['isAndroid']) $.titolo.setVisible(true);
 			
 		if (!app['json'].reparti.length == 0){
 			
@@ -411,6 +392,7 @@ function refresh() {
 	}
 	else {
 		cambiaTitolo('');
+		$.titolo.setVisible(false);
 
 	}
 	//app['primaGet'] = false;
@@ -511,14 +493,6 @@ function creaInfo() {
 	}
 }
 
-function messaggioChiusura(){
-	r = Ti.UI.createTableViewRow({
-		title: "GG di chiusura."
-	});
-	$.elenco.setData([r]);
-	creaInfo();
-}
-
 /**
  * Scandisce il json (variabile app['json']) e costruisce la tabella,
  * dotata di opportune sezioni.
@@ -567,12 +541,15 @@ function makeTab() {
 			for (dip=0; dip <app['json'].reparti[rep].dipendenti.length; dip++) {
 				
 				if (app['json'].reparti[rep].dipendenti[dip].fatto == 'F') {
+					
+					var titolo = (app['json'].reparti[rep].dipendenti[dip].cognome +' '+
+								app['json'].reparti[rep].dipendenti[dip].nome);
+					
+					if (app['DEBUG']) titolo += ' ('+
+								app['json'].reparti[rep].dipendenti[dip].n_matr +')';
+					
 					var d = Ti.UI.createTableViewRow({
-						title: (								
-								app['json'].reparti[rep].dipendenti[dip].cognome +' '+
-								app['json'].reparti[rep].dipendenti[dip].nome + ' ('+
-								app['json'].reparti[rep].dipendenti[dip].n_matr +')'
-							),
+						title: titolo,
 						color: 'black',
 						font: {
 							fontSize: 20,
@@ -695,6 +672,20 @@ function primaDialog(e) {
 	
 	makeTab();	
 }
+
+function aggiornamento(){	
+	getData();
+	wait(1000);
+	refresh();
+}
+
+function init() {
+	if (app['DEBUG']==false) $.provanotifiche.setVisible(false);
+	else $.provanotifiche.setVisible(true);
+
+}
+
+
 /*
  * ----------------------------------------------------------------------fine DICHIARAZIONE FUNZIONI
  */
@@ -729,7 +720,11 @@ $.sett0.addEventListener('click',function(){
 		$.input.setSelection(0,String($.input.value).length);
 	}
 	
-	$.d_sett0.addEventListener('click', function(e){
+	
+	$.d_sett0.show();
+  
+});	
+$.d_sett0.addEventListener('click', function(e){
 		if (e.index == 0){
 			Ti.API.info("Annullamento");
 		}
@@ -753,14 +748,31 @@ $.sett0.addEventListener('click',function(){
 				
 				getData();
 				cambiaTitolo('');
+				$.titolo.setVisible(false);
 		}	
 	});
-	$.d_sett0.show();
-  
 
 
-});	
-
+$.sett1.addEventListener('click', function(){
+	
+	if (app['isAndroid'])  {
+		$.input1.setWidth("20%");
+		$.input1.setValue(app['minuti']);
+		$.input1.setSelection(0,String($.input1.value).length);
+	}
+	else {
+		$.d_sett1.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
+		$.d_sett1.setValue(app['minuti']);
+	}
+		
+	$.d_sett1.setTitle("Modifica preavviso allarme");
+	$.d_sett1.setMessage(
+		("Valore che indica quanto prima si vuole ricevere la notifica, rispetto all'orario di inizio del giro."+'\n'+'\n'+
+		"ATTENZIONE: gli allarmi gia' impostati non verranno modificati."));
+	
+	
+	$.d_sett1.show();
+});
 $.d_sett1.addEventListener('click', function(e){
 	if (e.index == 0){
 		//console.log("ANNULLAMENTO");
@@ -784,27 +796,24 @@ $.d_sett1.addEventListener('click', function(e){
 	}
 });
 
-$.sett1.addEventListener('click', function(){
-	
-	if (app['isAndroid'])  {
-		$.input1.setWidth("20%");
-		$.input1.setValue(app['minuti']);
-		$.input1.setSelection(0,String($.input1.value).length);
+
+$.sett2.addEventListener('click', function(){
+
+	if (app['isAndroid']) {
+		$.input2.setWidth("80%");	
+		$.input2.setValue(app['urlBase']);
+		$.input2.setSelection(0,String($.input2.value).length);
+
 	}
 	else {
-		$.d_sett1.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
-		$.d_sett1.setValue(app['minuti']);
+		$.d_sett2.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
+		$.d_sett2.setValue(app['urlBase']);
 	}
-		
-	$.d_sett1.setTitle("Modifica preavviso allarme");
-	$.d_sett1.setMessage(
-		("Valore che indica quanto prima si vuole ricevere la notifica, rispetto all'orario di inizio del giro."+'\n'+'\n'+
-		"ATTENZIONE: gli allarmi gia' impostati non verranno modificati."));
+	$.d_sett2.setTitle("Modifica URL server");	
+	$.d_sett2.setMessage("N.B. Deve essere scritto anteponendo 'http://'.");
 	
-	
-	$.d_sett1.show();
+	$.d_sett2.show();
 });
-
 $.d_sett2.addEventListener('click',function(e){
 	
 	if (e.index == 0){
@@ -829,43 +838,60 @@ $.d_sett2.addEventListener('click',function(e){
 	}
 });
 
-$.sett2.addEventListener('click', function(){
 
-	if (app['isAndroid']) {
-		$.input2.setWidth("80%");	
-		$.input2.setValue(app['urlBase']);
-		$.input2.setSelection(0,String($.input2.value).length);
-
+$.settDebug.addEventListener('click', function(){
+	if (app['isAndroid']){
+		
 	}
 	else {
-		$.d_sett2.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
-		$.d_sett2.setValue(app['urlBase']);
+		$.d_settDebug.setStyle(Ti.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);
 	}
-	$.d_sett2.setTitle("Modifica URL server");	
-	$.d_sett2.setMessage("N.B. Deve essere scritto anteponendo 'http://'.");
-	
-	$.d_sett2.show();
+	$.d_settDebug.show();
 });
-
-
-function aggiornamento(){	
-	getData();
-	wait(1000);
-	refresh();
-}
+$.d_settDebug.addEventListener('click', function(e){	
+	
+	if (e.index == 0) {		
+		if (app['isAndroid'] == false){			
+			if (e.text != app['password']) {				
+				return;
+			}			
+		}
+		else {			
+			if ($.input_debug.value != app['password']) {				
+				return;
+			}
+		}		
+		app['DEBUG'] = false;		
+		init();
+	}
+	else if (e.index == 1) {
+		if (app['isAndroid'] == false){
+			if (e.text != app['password']) {
+				return;				
+			}			
+		}
+		else {
+			if ($.input_debug.value != app['password'])
+				return;
+		}
+		app['DEBUG'] = true;
+		init();		
+	}
+});
 
 $.mainWindow.addEventListener('open', function() {
 	$.dialog0.show();
 });
 
 
+
 //++++++++++++++++++++++++++++++++++++++++++++ inizio OPERAZIONI EFFETTIVE
 
 
-
+init();
 showDialog();
 
 $.index.open();
-/*
- * +++++++++++++++++++++++++++++++++++++++++++ fine OPERAZIONI EFFETTIVE
- */
+
+//+++++++++++++++++++++++++++++++++++++++++++ fine OPERAZIONI EFFETTIVE
+

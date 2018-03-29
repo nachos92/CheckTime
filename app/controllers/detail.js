@@ -160,7 +160,7 @@
 			else {
 	
 				if ($.args['noScan']){
-					Ti.API.info("Acquisizione sospesa --> $.args['DEBUG']");
+					Ti.API.info("<--- Acquisizione sospesa --> ");
 										
 					if ($.args['isAndroid']){						
 						Ti.API.info("Input_conferma.value: "+$.inputConferma.value);
@@ -175,7 +175,9 @@
 					
 				}
 				else {
-					// AGGIUNGERE SCANSIONE in futuro.
+					/**
+ 					* AGGIUNGERE SCANSIONE
+ 					*/
 				}
 				
 				/*
