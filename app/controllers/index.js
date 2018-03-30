@@ -20,9 +20,7 @@ app['messaggio'] = '';
 app['isAndroid'] = (Ti.Platform.osname=='android') ? true : false;
 
 app['primaGet'] = true;
-
-//app['urlBase'] = "http://155.185.73.210:8080/";
-app["urlBase"] = (app['isAndroid']) ? "http://10.0.2.2:8000/" : "http://127.0.0.1:8000/";
+ 
 app['urlRicezione'] = app['urlBase'] + "checks/";
 app['urlInvio'] = app['urlBase'] + "checks/dipendente/";
 app['urlDaydone'] = app['urlBase'] + "checks/planning/daydone/";
@@ -392,7 +390,7 @@ function refresh() {
 	}
 	else {
 		cambiaTitolo('');
-		$.titolo.setVisible(false);
+		if (app['isAndroid'])$.titolo.setVisible(false);
 
 	}
 	//app['primaGet'] = false;
@@ -680,6 +678,8 @@ function aggiornamento(){
 }
 
 function init() {
+	if (app['DEBUG']) app["urlBase"] = (app['isAndroid']) ? "http://10.0.2.2:8000/" : "http://127.0.0.1:8000/";
+	else app['urlBase'] = "http://192.168.0.101:8080/";
 	if (app['DEBUG']==false) $.provanotifiche.setVisible(false);
 	else $.provanotifiche.setVisible(true);
 
@@ -697,6 +697,7 @@ function init() {
  * +++++++++++++++++++++++++++++++++++++++++++ inizio OPERAZIONI EFFETTIVE 
  */
 
+//Cod. operatore
 $.sett0.addEventListener('click',function(){
 	
 	if (app['isAndroid']) {
@@ -713,26 +714,29 @@ $.sett0.addEventListener('click',function(){
 	
 	
 	
-	if(!app['isAndroid']){
-		$.d_sett0.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
+	if(app['isAndroid']){
+		$.input.setSelection(0,String($.input.value).length);		
 	}
 	else {
-		$.input.setSelection(0,String($.input.value).length);
+		$.d_sett0.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);
 	}
 	
 	
 	$.d_sett0.show();
   
-});	
-$.d_sett0.addEventListener('click', function(e){
+});
+//Cod. operatore
+$.d_sett0.addEventListener('click', function(e){	
 		if (e.index == 0){
 			Ti.API.info("Annullamento");
 		}
 		else {
 				if (app['isAndroid']){
-					if ($.input.value != '')
+					if ($.input.value != '') {
+						console.log($.input.value);
 						app['cod_op'] = $.input.value;
-					
+						
+					}	
 				}
 				else {
 					if (e.text !='')
@@ -741,18 +745,18 @@ $.d_sett0.addEventListener('click', function(e){
 					
 				app['primaGet']=true;
 				
-				setRefreshVisible(true);
+				//setRefreshVisible(true);
 				
 				app['json'] = null;
 				$.elenco.setData(null);
 				
 				getData();
 				cambiaTitolo('');
-				$.titolo.setVisible(false);
+				if (app['isAndroid']) $.titolo.setVisible(false);
 		}	
 	});
 
-
+//Minuti
 $.sett1.addEventListener('click', function(){
 	
 	if (app['isAndroid'])  {
@@ -773,6 +777,7 @@ $.sett1.addEventListener('click', function(){
 	
 	$.d_sett1.show();
 });
+//Minuti
 $.d_sett1.addEventListener('click', function(e){
 	if (e.index == 0){
 		//console.log("ANNULLAMENTO");
@@ -796,7 +801,7 @@ $.d_sett1.addEventListener('click', function(e){
 	}
 });
 
-
+//URL base
 $.sett2.addEventListener('click', function(){
 
 	if (app['isAndroid']) {
@@ -821,7 +826,7 @@ $.d_sett2.addEventListener('click',function(e){
 	}
 	else {
 		if (app['isAndroid']){
-			if ($.input.value != '')
+			if ($.input2.value != '')
 				app["urlBase"] = $.input2.value;
 		}
 		else {
