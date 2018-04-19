@@ -7,11 +7,13 @@ var app = {};
  * Se è true, viene mostrato il numero matricola dei dipendenti (di fianco al nome, nella lista).
  * Inoltre vengono mostrati i pulsanti di prova.
  */
-app['DEBUG'] = true;
+app['DEBUG'] = false;
+
 app['password'] = "0000";
 
 app['noScan'] = true;
-app['invioSegnalazione'] = false;
+app['invioSegnalazione'] = true;
+app['localhost'] = true;
 
 app['timezoneOffset'] = 60;
 app['minuti'] = 30;
@@ -20,7 +22,10 @@ app['messaggio'] = '';
 app['isAndroid'] = (Ti.Platform.osname=='android') ? true : false;
 
 app['primaGet'] = true;
- 
+
+if (app['localhost']) app["urlBase"] = (app['isAndroid']) ? "http://10.0.2.2:8000/" : "http://127.0.0.1:8000/";
+	else app['urlBase'] = "http://192.168.0.101:8080/";
+	
 app['urlRicezione'] = app['urlBase'] + "checks/";
 app['urlInvio'] = app['urlBase'] + "checks/dipendente/";
 app['urlDaydone'] = app['urlBase'] + "checks/planning/daydone/";
@@ -124,61 +129,40 @@ function provanotifica(){
 
 
 /**
- * Creo la notifica se data e orario attuale ("now") sono 'inferiori' alla data e l'ora
- * a cui si vuole impostare la notifica.
- *
- *  Passo l'orario di inizio del giro; deve essere quindi fatto a parte
- *  il calcolo dell'orario "ora_inizio - app['minuti']".
+ * Se la data e l'ora sono già superati, cioè "dataora_notifica<dataora_attuale"
+ * imposto la notifica alla settimana successiva.
  * 	
- * new Date(ora_inizio-MINUTI*60*1000));
+ *  REMINDER: new Date(ora_inizio-app['MINUTI']*60*1000));
  * 
  */
 function notifica(day,month,year,hh,mm){
-	
-	//REMINDER	var data = new Date(year, month, day, hours, minutes, seconds, milliseconds);
-	
-	
-	var now = new Date(); 
+		
 	var data = new Date(year,month,day,hh,mm);
 	
-	
-	
-	//if (now < data){
-		
 	if (app['isAndroid']){
 		var intent = Ti.Android.createServiceIntent({
         	url : 'serviceNotifiche.js'
     	});
     	intent.putExtra('title' , 'ATTENZIONE!');
     	intent.putExtra('message' , ("Inizio giro controlli tra "+String(app['minuti'])+" min."));
-    	intent.putExtra('interval', 3000);
-    	
-    	timestamp = new Date(data-app['minuti']*60*1000);
-    	
-    	if (timestamp < new Date()){
-    		//Settimana dopo
-    		intent.putExtra('timestamp', new Date(timestamp.getTime() + 1000*60*60*24*7));
-    		Ti.API.info("Notifica impostata in data: "+String( new Date(timestamp.getTime() + 1000*60*60*24*7)));
-    	}
-    	else {
-    		intent.putExtra('timestamp', timestamp);
-    		Ti.API.info("Notifica impostata in data: "+ String(timestamp));
-
-    	}
-    	
+    	intent.putExtra('interval', 3000);    	
+    	timestamp = new Date(data-app['minuti']*60*1000);    	    	
    		
    		/*
    		 * Se la data è superata, imposto la notifica per lo stesso giorno però
    		 * nella settimana successiva.
    		 */
-   		
-   		
-   		
-   		
-   		
-   		
+    	if (timestamp < new Date()){
+    		nuovaData = new Date(timestamp.getTime() + 1000*60*60*24*7);
+    		
+    		intent.putExtra('timestamp', nuovaData);
+    		Ti.API.info("Notifica impostata in data: "+String(nuovaData));
+    	}
+    	else {
+    		intent.putExtra('timestamp', timestamp);
+    		Ti.API.info("Notifica impostata in data: "+ String(timestamp));
+    	}    	
     	Ti.Android.startService(intent);
-		   	
 	}
 	else {		
 		var n = Ti.App.iOS.scheduleLocalNotification({
@@ -190,22 +174,17 @@ function notifica(day,month,year,hh,mm){
 			sound: "/alarm.mp3"
 		});					
 		Ti.API.info("Allarme impostato:"+'\t'+new Date(data-app['minuti']*60*1000));
-	}		
-			
+	}					
 }
 
 
 /**
  * A partire da data_inizio, che si suppone essere un lunedi',
  * si impostano le notifiche per tutti i giorni della settimana.
- * 
- * Reminder: notifica(D,M,Y,hh,mm)
  */
+ 
+//Reminder: notifica(D,M,Y,hh,mm)
 function registraNotifiche(){
-	
-	var orario = new Date();
-	orario.setHours(app['json'].reparti[0].orario.lun.orario.substring(0,2));
-	orario.setMinutes(app['json'].reparti[0].orario.lun.orario.substring(3,5));
 		
 	//Azzeramento delle notifiche preesistenti.
 	if(app['isAndroid']) {
@@ -227,7 +206,7 @@ function registraNotifiche(){
 	
 	for (var r=0; r<app['json'].reparti.length; r++){
 			var inizio = new Date(app['json'].reparti[0].data_inizio);
-			if(app['json'].reparti[0].orario.lun.orario)		
+			if(app['json'].reparti[r].orario.lun.orario)		
 				notifica(
 					(inizio.getDate()+0),
 					(inizio.getMonth()),
@@ -236,7 +215,7 @@ function registraNotifiche(){
 					(app['json'].reparti[r].orario.lun.orario.substring(3,5))
 				);
 			
-			if(app['json'].reparti[0].orario.mar.orario)		
+			if(app['json'].reparti[r].orario.mar.orario)		
 				notifica(
 					(inizio.getDate()+1),
 					(inizio.getMonth()),
@@ -245,7 +224,7 @@ function registraNotifiche(){
 					(app['json'].reparti[r].orario.mar.orario.substring(3,5))
 				);
 			
-			if(app['json'].reparti[0].orario.mer.orario)			
+			if(app['json'].reparti[r].orario.mer.orario)			
 				notifica(
 					(inizio.getDate()+2),
 					(inizio.getMonth()),
@@ -254,7 +233,7 @@ function registraNotifiche(){
 					(app['json'].reparti[r].orario.mer.orario.substring(3,5))
 				);
 			
-			if(app['json'].reparti[0].orario.gio.orario)		
+			if(app['json'].reparti[r].orario.gio.orario)		
 				notifica(
 					(inizio.getDate()+3),
 					(inizio.getMonth()),
@@ -263,7 +242,7 @@ function registraNotifiche(){
 					(app['json'].reparti[r].orario.gio.orario.substring(3,5))
 				);
 			
-			if(app['json'].reparti[0].orario.ven.orario)		
+			if(app['json'].reparti[r].orario.ven.orario)		
 				notifica(
 					(inizio.getDate()+4),
 					(inizio.getMonth()),
@@ -272,7 +251,7 @@ function registraNotifiche(){
 					(app['json'].reparti[r].orario.ven.orario.substring(3,5))
 				);
 				
-			if(app['json'].reparti[0].orario.sab.orario)		
+			if(app['json'].reparti[r].orario.sab.orario)		
 				notifica(
 					(inizio.getDate()+5),
 					(inizio.getMonth()),
@@ -281,7 +260,7 @@ function registraNotifiche(){
 					(app['json'].reparti[r].orario.sab.orario.substring(3,5))
 				);
 				
-			if(app['json'].reparti[0].orario.dom.orario)		
+			if(app['json'].reparti[r].orario.dom.orario)		
 				notifica(
 					(inizio.getDate()+6),
 					(inizio.getMonth()),
@@ -305,9 +284,8 @@ function getData() {
 			if (this.getStatus() == 200) {
 				Ti.API.info("Parsing json...");
 				app['json'] = JSON.parse(this.responseText);
-
+				app['httpErr'] = false;
 			}
-			app['httpErr'] = false;
 		},
 		onerror: function(){
 			
@@ -325,8 +303,7 @@ function getData() {
 			}	
 		}
 	});
-
-	//console.log(app['urlRicezione'].concat(app['cod_op']));
+	console.log(app['urlRicezione'].concat(app['cod_op']));
 	xhr.open("GET", app['urlRicezione'].concat(app['cod_op']));
 	
 	try{					
@@ -373,7 +350,7 @@ function showDialog() {
  */
 function refresh() {
 		
-	Ti.API.info("PrimaGet --> "+app['primaGet']);
+	//Ti.API.info("PrimaGet --> "+app['primaGet']);
 	//console.log(getData(app['primaGet']));
 	//console.log(app['json']);
 	
@@ -409,34 +386,11 @@ function controlloSez(){
 			for (m=0; m<app['json'].reparti[i].dipendenti.length; m++){
 				if (app['json'].reparti[i].dipendenti[m].fatto == 'T') {
 					contatDip++;
-					//console.log("Dipendenti fatti: "+contatDip);
 				}
 			}
 			if (contatDip == app['json'].reparti[i].dipendenti.length) {
-				app['json'].reparti[i].fatto = 'T';
-				
-				Ti.API.info("Reparto "+app['json'].reparti[i].nome+" finito!");
-				//alert("Reparto "+app['json'].reparti[i].nome+" finito!");				
-				/*
-				 * Mando una richiesta all'url indicato
-				 * per segnare come fatta una giornata per un reparto.
-				 */
-				/*
-				var urlFineReparto = (
-					app['urlBase'] + "checks/"+
-					app['json'].n_matr + "/planning/"+
-					app['json'].reparti[i].id+"/done/"
-					);
-				var client = Ti.Network.createHTTPClient({
-					timeout: 3000,
-					onerror: function(){
-						alert("Errore invio (controlloSez)");
-					}
-				});
-				
-				client.open("GET",urlFineReparto, true);
-				client.send();
-				*/
+				app['json'].reparti[i].fatto = 'T';				
+				Ti.API.info("Reparto "+app['json'].reparti[i].nome+" finito!");				
 			}
 		}
 	}
@@ -520,18 +474,15 @@ function makeTab() {
 		 * Per ogni reparto crea una TableViewSection in cui inserire
 		 * le righe dei dipendenti.
 		 */
-		for (rep=0; rep < app['json'].reparti.length; rep++) {
-						
+		for (rep=0; rep < app['json'].reparti.length; rep++) {						
 			var sez = Titanium.UI.createTableViewSection({
 				headerTitle: (app['json'].reparti[rep].nome),
-				});
-			
+				});			
 			sez.setHeaderView({
 				font: {
 					fontSize: 16
 				}
 			});
-			
 			var dipendenti = [];
 			/**
 			 * Aggiunta dei dipendenti alla sezione corrente.
@@ -562,10 +513,7 @@ function makeTab() {
 					/**
 					 * Al click si apre la finestra di 'dettaglio', con i controlli per il dipendente.
 					 */
-					d.addEventListener('click',function(e){				
-						
-						app['n_matr'] = e.row.title.n_matr;
-						
+					d.addEventListener('click',function(e){																						
 						/*
 						 * Ricerca dell'elemento corrispondente alla riga cliccata, e attribuzione del valore 
 						 * ad una variabile. 
@@ -573,15 +521,16 @@ function makeTab() {
 						for (i=0; i<app['json'].reparti.length; i++){
 							var fatto = false;
 							for (j=0; j<app['json'].reparti[i].dipendenti.length; j++){
-								app['matricola'] = app['json'].reparti[i].dipendenti[j];
-																
-								if (app['matricola'].n_matr == e.row.title.n_matr) {
+								
+								app['dipendente'] = app['json'].reparti[i].dipendenti[j];
+								
+								if (app['dipendente'].n_matr == e.row.n_matr) {
 									fatto = true;
 									break;
 								}
 							}
 						}
-						
+						console.log(app['dipendente'].n_matr);
 						
 						/** 
 						 * Creazione di un'istanza di'detail'.
@@ -593,8 +542,8 @@ function makeTab() {
 						
 						dettaglio.addEventListener('close', function(){
 							
-							Ti.API.info("Persona.fatto: "+app['matricola'].fatto);
-							if(app['matricola'].fatto == 'T'){
+							Ti.API.info("Persona.fatto: "+app['dipendente'].fatto);
+							if(app['dipendente'].fatto == 'T'){
 								//console.log("Eliminazione riga "+e.index);
 								//console.log("Sezione - "+sez.indice);
 																
@@ -616,7 +565,7 @@ function makeTab() {
 								
 								xhr_fatto.open(
 									"GET",
-									app['urlBase'].concat("checks/dipendente/").concat(app['matricola'].n_matr)
+									app['urlBase'].concat("checks/dipendente/").concat(app['dipendente'].n_matr)
 									);
 								
 								//xhr_fatto.send();
@@ -634,15 +583,11 @@ function makeTab() {
 					}
 			}
 			arraySez.push(sez);
-			
-			} // ----> Fine ciclo for -- REP		
-		
-		$.elenco.setData(arraySez);
-		
+		} // ----> Fine ciclo for -- REP		
+		$.elenco.setData(arraySez);	
 		//Creazione messaggio INFO
 		creaInfo();		
 	}
-
 	app['primaGet'] = false;
 	return 0;
 }
@@ -656,19 +601,23 @@ function salvaCod(e){
 }
 
 function primaDialog(e) {
+	
 	if (app['isAndroid']) {
 		app['cod_op']= $.start_input.value;
-		Ti.API.info("app['cod_op']: "+$.start_input.value);
 	}
 	else {
 		app['cod_op'] = e.text;	
 	}
 	
 	getData();
-	wait(500);
+
+	/*
+	wait(100);
 	if (app['httpErr']) getData();
-	
-	makeTab();	
+	wait(100);
+	getData();
+	//makeTab();
+	*/
 }
 
 function aggiornamento(){	
@@ -678,7 +627,7 @@ function aggiornamento(){
 }
 
 function init() {
-	if (app['DEBUG']) app["urlBase"] = (app['isAndroid']) ? "http://10.0.2.2:8000/" : "http://127.0.0.1:8000/";
+	if (app['localhost']) app["urlBase"] = (app['isAndroid']) ? "http://10.0.2.2:8000/" : "http://127.0.0.1:8000/";
 	else app['urlBase'] = "http://192.168.0.101:8080/";
 	if (app['DEBUG']==false) $.provanotifiche.setVisible(false);
 	else $.provanotifiche.setVisible(true);
@@ -705,7 +654,7 @@ $.sett0.addEventListener('click',function(){
 		$.input.setValue(app['cod_op']);		
 	}
 	else {
-		$.d_sett0.setStyle(Titanium.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
+		$.d_sett0.setStyle(Ti.UI.iOS.AlertDialogStyle.PLAIN_TEXT_INPUT);		
 		$.d_sett0.setValue(app['cod_op']);		
 	}
 	

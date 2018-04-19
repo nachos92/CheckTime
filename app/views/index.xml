@@ -2,7 +2,8 @@
 	<TabGroup>
 		<Tab title="Home" icon="KS_nav_ui.png">
 			<Window id="mainWindow">
-				<AlertDialog id="dialog0" title="Attenzione" message="Inserire codice operatore:" onClick="primaDialog" keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD">
+				<AlertDialog id="dialog0" title="Attenzione" message="Inserire codice operatore:" 
+					onClick="primaDialog" keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD">
 					<View platform="android">
 						<TextField id="start_input"
 							keyboardType="Ti.UI.KEYBOARD_TYPE_NUMBER_PAD"
@@ -14,20 +15,17 @@
         			</ButtonNames>
 				</AlertDialog>
 				<Label platform="android" id="titolo" visible='false' top="0"> </Label>
+				<Button id="refresh_tab" onClick="aggiornamento"></Button>
 				<Button id="info" onClick="showInfo"></Button>
 				<AlertDialog id="dialogInfo">										
 					<ButtonNames>            						
 						<ButtonName>Chiudi</ButtonName>
         			</ButtonNames>
 				</AlertDialog>
-				<Button id="refresh_tab" onClick="aggiornamento"></Button>
-				
+					
 				<TableView id='elenco' class='container'></TableView>
 				
-				
-				<Button id="provanotifiche" bottom="10%" onClick="provanotifica">Prova notifiche</Button>
-
-				
+				<Button id="provanotifiche" bottom="10%" onClick="provanotifica">Prova notifiche</Button>				
 			</Window>
 		</Tab>
 		<Tab title="Impostazioni" icon="KS_nav_views.png">
@@ -89,3 +87,4 @@
 		</Tab>
 	</TabGroup>
 </Alloy>
+

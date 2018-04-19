@@ -38,7 +38,7 @@
 	for (iter=0; iter<2; iter++){
 		if (iter==0){
 	
-			for (i=0; i<$.args['matricola'].controlli.length; i++){
+			for (i=0; i<$.args['dipendente'].controlli.length; i++){
 				
 				var c = Ti.UI.createTableViewRow({
 					//title: dip.controlli[i].titolo,
@@ -52,25 +52,23 @@
 						fontSize: 20,
 						fontFamily: 'Helvetica Neue'					
 					}
-				});
-				
+				});				
 				c.add(Ti.UI.createLabel({
-					text: $.args['matricola'].controlli[i].titolo,
+					text: $.args['dipendente'].controlli[i].titolo,
 					left: "2%",
 					color: 'black',
 					font: {
 						fontSize: 18,
 						fontFamily: 'Helvetica Neue'					
 					}
-				}));
+				}));				
 				
-				var statoSwitch = ($.args['matricola'].controlli[i].value == 'F') ? false : true;
-				
+				var statoSwitch = ($.args['dipendente'].controlli[i].value == 'F') ? false : true;				
 				var s = Ti.UI.createSwitch({
 					value: statoSwitch,
-					titolo: $.args['matricola'].controlli[i].titolo,
-					id: $.args['matricola'].controlli[i].id,
-					nome: $.args['matricola'].controlli[i].titolo,
+					titolo: $.args['dipendente'].controlli[i].titolo,
+					id: $.args['dipendente'].controlli[i].id,
+					nome: $.args['dipendente'].controlli[i].titolo,
 					right: '2%',					
 				});
 				
@@ -80,11 +78,10 @@
 					s.setBorderRadius(5);				
 				}
 				
-				dizModifiche[$.args['matricola'].controlli[i].titolo] = statoSwitch;
+				dizModifiche[$.args['dipendente'].controlli[i].titolo] = statoSwitch;				
 				
 				s.addEventListener('change', function(e){					
 					dizModifiche[this.titolo] = e.value;
-					//console.log(this.titolo+" ---> "+e.value);										
 				});
 				c.add(s);			
 				arrayControlli.push(c);
@@ -104,10 +101,10 @@
 	
 	function invioSegnalazione(oggetto){
 		var client = Ti.Network.createHTTPClient();
-		Ti.API.info("Invio JSON a: "+$.args['urlInvio'] + $.args['n_matr'] + '/done/');
+		Ti.API.info("Invio JSON a: "+$.args['urlInvio'] + $.args['dipendente'].n_matr + '/done/');
 		client.open(
 			"POST",
-			$.args['urlInvio'] + $.args['n_matr'] + '/done/',
+			$.args['urlInvio'] + $.args['dipendente'].n_matr + '/done/',
 			true);
 		client.setRequestHeader(
 			'Content-Type',
@@ -133,17 +130,7 @@
 		
 		$.dConferma.setTitle("Riepilogo");
 		$.dConferma.setMessage(testo);
-		/*
-		var dConferma = Ti.UI.createAlertDialog({
-			title: "Riepilogo",
-			message: testo,
-			buttonNames: ['Annulla','Ho preso visione.'],
-			font: {
-				fontSize: 16
-			}
-		});
-		*/
-		
+	
 		if ($.args['isAndroid']){
 			$.inputConferma.value = "";
 		}
@@ -158,21 +145,17 @@
 				Ti.API.info("Annullamento");
 			}
 			else {
-	
-				if ($.args['noScan']){
+				if ($.args['noScan']){					
 					Ti.API.info("<--- Acquisizione sospesa --> ");
-										
 					if ($.args['isAndroid']){						
 						Ti.API.info("Input_conferma.value: "+$.inputConferma.value);
-						if ($.inputConferma.value != $.args['matricola'].n_matr) return;
-						Ti.API.info("Conferma della matricola: "+$.args['matricola'].n_matr);
+						if ($.inputConferma.value != $.args['dipendente'].n_matr) return;
+						Ti.API.info("Conferma della matricola: "+$.args['dipendente'].n_matr);
 					}
 					else {
-						//Ti.API.info("Input_conferma.value: "+ e.text);
-						if (e.text != $.args['matricola'].n_matr) return;
-						Ti.API.info("Conferma della matricola: "+$.args['matricola'].n_matr);
-					}
-					
+						Ti.API.info("Conferma della matricola: "+$.args['dipendente'].n_matr);
+						if (Number(e.text) != $.args['dipendente'].n_matr) return;
+					}					
 				}
 				else {
 					/**
@@ -181,21 +164,17 @@
 				}
 				
 				/*
-				 * Per ogni riga della tableView, se il valore dello switch è falso
-				 * allora lo aggiungo ad arrayNomi.
-				 */
-				
+				* Per ogni riga della tableView, se il valore dello switch è falso
+				* allora lo aggiungo ad arrayNomi.
+				*/				
 				var arrayNomi = [];
 				for (var key in dizModifiche){
-					
 					if (dizModifiche[key] == false){					
 						arrayNomi.push(key);
 					}
 				}				
-				/**
-				 * Se ci sono dei controlli negativi, ovvero se arrayNomi è vuoto,
-				 * creo ed invio un json.
-				 */
+				
+				//Creazione JSON
 				var messaggio = '{';
 				if (arrayNomi.length != 0){
 	
@@ -207,18 +186,12 @@
 							messaggio += ',';
 					}			
 					messaggio += ']';											
-				}
-				
+				}				
 				messaggio += '}';
-				/**
-				 * Invio anche in caso non ci siano controlli
-				 * con esito negativo.
-				 * In questo modo riesco (da server) a impostare come
-				 * 'fatto' un dipendente.
-				 */
-				if ($.args['invioSegnalazione']) invioSegnalazione(messaggio);
+								
+				invioSegnalazione(messaggio);
 				
-				$.args['matricola'].fatto = 'T';			
+				$.args['dipendente'].fatto = 'T';			
 				$.detail.close();			
 			}
 		});
